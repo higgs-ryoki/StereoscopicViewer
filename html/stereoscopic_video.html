@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<!--
+	Stereoscopic Videoviewer for 3D Browsing of local video files ver. 1.0
+		stereoscopic_video.html
+								2021. 9.20. coded by K. RYOKI
+-->
+<html lang="ja">
+	<head>
+		<meta http-equiv="content-type" content="text/html;charset=utf-8;" />
+		<meta http-equiv="Pragma" content="no-cache">
+		<meta http-equiv="Cache-Control" content="no-store">
+		<title>test_video</title>
+		<link href="./../css/basic.css" rel="stylesheet" type="text/css" media="all" />
+		<link href="./../css/stereoscope.css" rel="stylesheet" type="text/css" media="all" />
+		<script type="text/javascript" src="./../GeneratedItems/CSScriptLib.js"></script>
+		<script src="https://code.jquery.com/jquery-3.1.1.slim.min.js"
+		integrity="sha256-/SIrNqv8h6QGKDuNoLGA4iret+kyesCkHGzVUUV0shc="
+		crossorigin="anonymous"></script>
+		<script src="./../js/jquery-3.6.0.slim.min.js"></script>
+	<html>
+	<body id="body">
+		<noscript>
+			<hr>
+			<em>JavaScriptを有効にして下さい。</em><br />
+		</noscript>
+		<main id="main">
+			<div id="set">
+				<input id="filename" type="file" accept="video/*">　傾斜(deg)&thinsp;<input type="number" id="input_rotate" name="tentacles" min="-180" max="180" value="0" onchange="rotation()">
+			</div>
+			<video id="video1" class="video" controls muted autoplay src="./../img/BIPS.mp4"></video>
+			<video id="video2" class="video" controls muted autoplay src="./../img/BIPS.mp4"></video>
+		</main>
+		<footer id="footer">
+			<img id="logo", src="./../img/logo.png", alt="HIGGS Stereoscopic Viewer">
+			Copyright(C) 2021 Hattaso Institute of Geophysics ans Geoscience (HIGGS).<br />
+			All rights reserved.
+		</footer>
+	</body>
+	<script>
+		$('#input_rotate').css('visibility','visible');
+		$('#filename').change(function() {
+			var fileList = this.files ;
+			var blobUrl = window.URL.createObjectURL( fileList[0] ) ;
+			$('#video1').attr('src',blobUrl);
+			$('#video2').attr('src',blobUrl);
+		});
+		//videoフレームの回転
+		function rotation() {
+			angle = $("#input_rotate").val();
+			$('video').css('transform', 'rotate('+angle+'deg)');
+		}
+	</script>
+</html>
