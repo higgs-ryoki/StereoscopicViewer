@@ -3,8 +3,17 @@
 	stereoscope.css
 		css for Stereoscopic Viewer Ver. 2.0
 												2019. 5.21. coded by K. RYOKI
-												2021. 9. 1. improved
+												2023. 1.29. improved
 */
+
+
+#google_map:disabled{
+    color: #ddd;
+    background: #AAA;
+}
+p {
+	margin: 0px;
+}
 iframe,video{
 	width: 48vw;
 	height:60vh;
@@ -13,7 +22,6 @@ iframe,video{
 	transform:rotate(0deg);
 	user-select:auto;
 	position: relative;
-	z-index: 1;
 }
 #body {
 	overflow:auto;
@@ -25,10 +33,10 @@ iframe,video{
 	background-image:url(./../img/back.gif);
 	background-repeat:repeat;
 }
-#header0{
+#header{
 	margin-left:10px;
 	margin-right:10px;
-	height:155px;
+	height:auto;
 	min-width:100px;
 	user-select: none;
 }
@@ -44,7 +52,7 @@ iframe,video{
 	min-width:95vw;
 	padding:0px;
 	border:1px;
-	height:20px;
+	height:30px;
 	font-size:10px;
 	color:#000088;
 	text-align : right;
@@ -53,7 +61,7 @@ iframe,video{
 	margin-right:5px;
 	}
 #altitude {
-	width: 8%;
+	width: 111px;
 }
 #button_drow {
 	border: 1px solid #aaa;
@@ -61,7 +69,6 @@ iframe,video{
 	background-image: linear-gradient(to bottom, #fff, #ccc);
 	border-radius: 4px;
 	color: #000;
-	line-height: 16px;
 	-webkit-transition: none;
 	transition: none;
 	text-shadow: 0 1px 1px rgba(0, 0, 0, .3);
@@ -73,45 +80,80 @@ iframe,video{
 }
 #main_url {
 	transition: none;
-	white-space:pre;
+	color:#000;
+	text-shadow: #a2cede 2px 2px;
+	position: relative;
+	font-size: 16px;
+	margin: 0px;
+	height: auto;
+	z-index: 70;
+}
+#url_0 {
+	height:18px;
+	border: 1px solid #aaa;
+	z-index: 80;
+}
+#section_0 {
+	height:auto;
+	z-index: 80;
+}
+#p_0 {
+	height:auto;
+	margin: 0px;
+
 }
 #url_1, #url_2 {
 	height:8px;
-	font-size: 8pt;
-	visibility: hidden;
+	font-size: 8px;
+	line-height: 1;
+	color: MediumBlue;
+	white-space:pre;
 }
 #title_url_0 {
 	height:26px;
 	font-size: 12pt;
 	transition: none;
-	white-space:nowrap;
+	margin: 0px;
+    vertical-align:7%;
+	z-index: 80;
 }
-#title_url_1, #title_url_2{
-	height:8px;
+#sub_url, #calc_id, #angle_unit, #angles_vmp {
+	margin: 0;
 	font-size: 8pt;
-	visibility: hidden;
+	color: MediumBlue;
+	white-space:pre-line;
+	z-index: 3;
 }
-#sub_url {
-	height:30px;
+#view_index {
+	margin: 0;
+	color: red;
+}
+
+#sub_point {
+	margin: 0;
 	font-size: 8pt;
-	visibility: hidden;
+	color: MediumBlue;
+	white-space: nowrap;
+	
 }
-#url_indication {
+
+#url_indication, #point_indication {
 	border: 1px solid #aaa;
 	background-image: -webkit-linear-gradient(top, #fff, #ccc);
 	background-image: linear-gradient(to bottom, #fff, #ccc);
-	border-radius: 4px;
-	color: #000;
-	line-height: 16px;
+	color: MediumBlue;
+	font-weight:bold;
 	-webkit-transition: none;
 	transition: none;
-	text-shadow: 0 1px 1px rgba(0, 0, 0, .3);
-	width: 65px;
-	height: 25px;
-	font-size: 5pt;
+	width: 75px;
+	height: 22px;
+	font-size: 8pt;
+}
+#angle_units {
+	z-index: 80;
+
 }
 #button_others{
-	position: relative;
 	position: relative;
 	z-index: 80;
 }
@@ -126,7 +168,7 @@ iframe,video{
 	padding:0px;
 	position: relative;
 	visibility: hidden;
-	z-index: 100
+	z-index: 60;
 }
 #filename{
 	position: relative;
@@ -140,28 +182,68 @@ iframe,video{
 	position: relative;
 	contenteditable:true;
 	user-select:auto;
+	z-index: 20;
 }
 #iframe02{
 	position: relative;
+	z-index: 20;
 }
 #iframe11{
 	position: relative;
 	contenteditable:true;
 	user-select:auto;
+	z-index: 20;
 }
 #iframe12{
 	position: relative;
+	z-index: 20;
 }
 #p_iframe1{
 	position: relative;
 	contenteditable:true;
 	user-select:auto;
+	z-index: 20;
 }
 #p_iframe2{
 	position: relative;
+	z-index: 20;
+}
+#angle{
+	color:#000;
+	text-shadow: #a2cede 2px 2px;
+	position: relative;
+	z-index: 50;
+}
+#p_1_inputs{
+	color:#f00;
+	z-index: 60;
 }
 #logo{
 	float: left;
+	z-index: 10;
+}
+#counter{
+	float: left;
+	vertical-align: top;
+	white-space:nowrap;
+	width: 200px;
+	height:50px;
+	padding:0px;
+	border: 0px;
+	z-index: 1;
+}
+#counter_top_page{
+	float: right;
+	vertical-align: top;
+	white-space:nowrap;
+	width: 110px;
+	height:50px;
+	padding:0px;
+	border: 0px;
+}
+#copyright{
+	float: right;
+	z-index: 10;
 }
 .selection-group input[type="radio"]:checked + label img {
 	background: orange;
@@ -169,14 +251,12 @@ iframe,video{
 .selection-group input[type="radio"] {
 	display: none;
 }
-
 .drow, .button{
 	border: 1px solid #aaa;
 	background-image: -webkit-linear-gradient(top, #fff, #ccc);
 	background-image: linear-gradient(to bottom, #fff, #ccc);
 	border-radius: 4px;
 	color: #000;
-	line-height: 16px;
 	-webkit-transition: none;
 	transition: none;
 	text-shadow: 0 1px 1px rgba(0, 0, 0, .3);
@@ -184,13 +264,16 @@ iframe,video{
 	height: 20px;
 	font-size: 12pt;
 }
+#url_indication, #point_indication{
+	color: MediumBlue;
+	font-weight:bold;
+}
 .move {
 	border: 1px solid #aaa;
 	background-image: -webkit-linear-gradient(top, #fff, #ccc);
 	background-image: linear-gradient(to bottom, #fff, #ccc);
 	border-radius: 4px;
 	color: #000;
-	line-height: 16px;
 	-webkit-transition: none;
 	transition: none;
 	text-shadow: 0 1px 1px rgba(0, 0, 0, .3);
@@ -200,15 +283,14 @@ iframe,video{
 }
 .input_value {
 	color: #000;
-	line-height: 16px;
 	-webkit-transition: none;
 	transition: none;
 	text-shadow: 0 1px 1px rgba(0, 0, 0, .3);
-	width: 5%;
+	width: 80px;
 	height: 12px;
 	font-size: 12pt;
 }
-.iframe,.p_iframe,.video{
+.iframe, .p_iframe, .video{
 	height:80vh;
 	padding:0px;
 	border: 1px solid navy;
@@ -217,9 +299,15 @@ iframe,video{
 	user-select:auto;
 }
 .url[type="text"] {
-	width:85%;
+	width:80%;
 	margin-top:1px;
 	height:20px;
 	padding:1px 1px 1px 1px;
 	border: 1px solid #555;
+}
+.buttan1, #p_blue_color {
+	margin: 0px;
+}
+.span_value {
+	margin: 0;
 }
