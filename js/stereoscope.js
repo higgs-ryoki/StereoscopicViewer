@@ -1,7 +1,6 @@
 //	stereoscope.js										2019. 6.20. coded by K. RYOKI
-//																		2023. 1.29. improved
+//																		2023. 5.13. improved
 //
-//monitorEvents(document.footer, 'click');
 var mouseEnter=1;
 var mouseExit=0;
 var mouseLocation=0;
@@ -93,10 +92,8 @@ var iframe12_detached='';
 var g = geodesic.Geodesic,
     geod = g.WGS84,
     dms = DMS;
-//var vmp_ido;
-//var vmp_keido;
-	var dmsformat=0;
-	var prec=4;
+var dmsformat=0;
+var prec=4;
 
 //HTML書き換え用
 var section_0_html='<span id="main_url"><span id="view_index">作成元図</span><span id="title_url_0"><input type="text" class="url" id="url_0" size="10"onchange="url_rewrite(0)"/><input type="button" class="button1" id="url_indication" onclick="url_text()" value="瞳孔点表示" /><input type="button" class="button1" id="point_indication" onclick="point_list()" value="固視点表示" />\n</span><p id="p_blue_color"><p class="span_value" id="sub_url">左図瞳孔位置<input type="text" class="url" id="url_1">\n右図瞳孔位置<input type="text" class="url" id="url_2"></p><span id="sub_point" ><form name="angle_units">&emsp;&emsp;&emsp;&thinsp;&thinsp;固視点の計算精度<select name="calc_prec" id="calc_id" onchange="change_angle_unit()" size=1><option value="0" selected> 1m 0.00001d 0.1"</option><option value="1"> 100mm 0.01"</option><option value="2"> 10mm 0.001"</option><option value="3"> 1mm 0.0001"</option><option value="4"> 100um 0.00001"</option><option value="5"> 10um 0.000001"</option><option value="6"> 1um 0.0000001"</option><option value="7"> 100nm 0.00000001"</option><option value="8"> 10nm 0.000000001"</option><option value="9"> 1nm 0.0000000001"</option></select>&emsp;&emsp;固視点の地表投影点での緯度,経度,方位角(deg),各瞳孔位置からそれぞれの図中心点までの測地距離(m) : <span id="angles_vmp"></form></span></span></p></span>';
@@ -335,12 +332,6 @@ function altitude() {
 	value=$('#altitude').val();
 	viewpoint.altitude=value;
 	change_element(0,value);
-/*
-$('#view_index').html("<span style='color: red;'>視点位置</span>");
-var iframes_center_distance=eval(value)/Math.tan(-eval(viewpoint.elevation));
-var iframes_center_latitude=ido(viewpoint.latitude,viewpoint.longitude,iframes_center_distance,(parseFloat(viewpoint.azimuth)+90));							//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
-var iframes_center_longitude=keido(viewpoint.latitude,viewpoint.longitude,iframes_center_distance,(parseFloat(viewpoint.azimuth)+90));	//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
-*/
 }
 //緯度 変更
 function latitude() {
@@ -606,16 +597,6 @@ function set_view_url(url_number,url_source,parallax_length) {	//視点No., 元�
 	url_source3=url_source[2];
 	switch (url_number) {
 		case 0:																				//viewpoint　[視点URL入力時]
-/*
-			increment=-parallax_length*500;							//左図視点作成
-			url_source[1]=ido(url_source2,url_source3,increment,(parseFloat(-url_source[4])+90));		//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
-			url_source[2]=keido(url_source2,url_source3,increment,(parseFloat(-url_source[4])+90));	//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
-			$('#url_1').val(decodeURI(url_origin+url_pathname+"#"+url_source.join('/')));
-			increment=+parallax_length*500;							//右図視点作成
-			url_source[1]=ido(url_source2,url_source3,increment,(parseFloat(-url_source[4])+90));		//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
-			url_source[2]=keido(url_source2,url_source3,increment,(parseFloat(-url_source[4])+90));	//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
-			$('#url_2').val(decodeURI(url_origin+url_pathname+"#"+url_source.join('/')));
-*/
 			increment=parallax_length*500;							//左図視点作成
 			url_source[1]=ido(url_source2,url_source3,increment,(parseFloat(url_source[4])));		//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
 			url_source[2]=keido(url_source2,url_source3,increment,(parseFloat(url_source[4])));	//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
@@ -651,8 +632,6 @@ function set_view_url(url_number,url_source,parallax_length) {	//視点No., 元�
 	iframes_change();
 }
 function point_list() {
-//	var dmsformat;
-//	var prec;
 	if (point_list_flag==0) {										//図中の固視点心位置を表示しない場合
 			$('#point_indication').val("固視点表示");
 			$('#sub_point').css('display','none');
@@ -661,59 +640,33 @@ function point_list() {
 			$('#point_indication').val("固視点非表示");
 			$('#sub_point').css('display','inline');
 			point_list_flag=0;
-/*			var elev1=$('#elevation').val();
-			var s12;
-			if (elev1==0) {
-					s12=0;
-				} else {
-				s12=$('#altitude').val()/Math.tan(-elev1/180*Math.PI);
-			}
-//alert("671: s12="+s12);
-					angles_vmp_rewrite(s12);
-*/
-
-change_angle_unit()
+			change_angle_unit()
 	}
 }
 function change_angle_unit() {
-//	alert("676: selectedIndex= "+document.angle_units.calc_prec.selectedIndex);
-			var elev1=$('#elevation').val();
-			var s12;
-			if (elev1==0) {
-					s12=0;
-				} else {
-				s12=$('#altitude').val()/Math.tan(-elev1/180*Math.PI);
-			}
-//alert("671: s12="+s12);
-					angles_vmp_rewrite(s12);
+	var elev1=$('#elevation').val();
+	var s12;
+	if (elev1==0) {
+			s12=0;
+		} else {
+			s12=$('#altitude').val()/Math.tan(-elev1/180*Math.PI);
+	}
+	angles_vmp_rewrite(s12);
 }
 function angles_vmp_rewrite(s12) {
 	var set_vmp;
-				//alert(Math.PI+", "+elev1+", "+Math.tan(-elev1/180*Math.PI));
-		set_vmp=$("#latitude").val()+" "+$("#longitude").val()+" "+$("#azimuth").val()+" "+s12;
-		dmsformat=0;																			//角度単位:(deg)
-/*
-	//		prec=precision.elements['calc_prec'].value;
-
-	//prec=document.getElementByName('calc_prec').value;
-	//prec=document.calc_prec.calc_prec[1].checked;
-*/
+	set_vmp=$("#latitude").val()+" "+$("#longitude").val()+" "+$("#azimuth").val()+" "+s12;
+	dmsformat=0;																			//角度単位:(deg)
 	const accuracy = document.angle_units.calc_prec;
 	// 値(数値)を取得
 	const num = accuracy.selectedIndex;
-	//const num = document.calc_prec.accuracy.selectedIndex;
-
 	// 値(数値)から値(value値)を取得
 	const str = accuracy.options[num].value;
-	//const str = document.calc_prec.accuracy.options[num].value;
-//alert("693:  str(prec)= "+str);
-//	prec=9;
-prec=str;
-		var t = GeodesicDirect(set_vmp,dmsformat,prec);
-		const t_p2_elements = t.p2.split(' ');
-		const t_p2_result=t_p2_elements[0]+", "+t_p2_elements[1]+", "+t_p2_elements[2]+", "+t.s12;
-//alert("699: t_p2_result= "+t_p2_result);
-		$("#angles_vmp").html(t_p2_result);
+	prec=str;
+	var t = GeodesicDirect(set_vmp,dmsformat,prec);
+	const t_p2_elements = t.p2.split(' ');
+	const t_p2_result=t_p2_elements[0]+", "+t_p2_elements[1]+", "+t_p2_elements[2]+", "+t.s12;
+	$("#angles_vmp").html(t_p2_result);
 }
 //====================================================================================================
 /*
@@ -754,54 +707,28 @@ function keido(lat1, lon1, s12, azi_add_90) {
 	const latlon=point.p2.split(' ');
 	return latlon[1];
 }
-/*
-
-		if (t.status=='OK') {
-				var result = t.p2.split(' ');
-				vmp_ido=result[0];
-				vmp_keido=result[1];
-			} else {
-				vmp_ido=NaN;
-				vmp_keido=NaN;
-		}
-		//angles_vmp:'ido_view_middle_point', 固視点の緯度(°)
-		document.getElementById('angles_vmp').innerHTML = vmp_ido;
-		//keido_vmp:'keido_view_middle_point', 固視点の経度(°)
-		//document.getElementById('keido_vmp').innerHTML = vmp_keido;
-		$('#keido_vmp').value=vmp_keido;
-		point_list_flag=0;
-*/
-
-
-
 
 //The following, quoted
 //reference
 //	Karney (2022):Geodesic calculations for an ellipsoid done right,     https://geographiclib.sourceforge.io/scripts/geod-calc.html (viewed on 2022.1.18.). 
-
-
-"use strict";
+//"use strict";
 var g = geodesic.Geodesic,
     geod = g.WGS84,
     dms = DMS;
-
 /*
  * Compute the area of a polygon
  */
-
 g.Geodesic.prototype.Area = function(points, polyline) {
   var poly = this.Polygon(polyline), i;
   for (i = 0; i < points.length; ++i)
     poly.AddPoint(points[i].lat, points[i].lon);
   return poly.Compute(false, true);
 }
-
 /*
  * split a geodesic line into k approximately equal pieces which are no
  * longer than about ds12 (but k cannot exceed maxk, default 20), and returns
  * an array of length k + 1 of objects with fields lat, lon, azi.
  */
-
  g.Geodesic.prototype.InversePath =
   function(lat1, lon1, lat2, lon2, ds12, maxk) {
     var line = this.InverseLine(lat1, lon1, lat2, lon2, g.STANDARD),
@@ -818,7 +745,6 @@ g.Geodesic.prototype.Area = function(points, polyline) {
     }
     return points;
   };
-
 function formatpoint(lat, lon, azi, dmsformat, prec) {
   "use strict";
   var trail;
@@ -836,14 +762,11 @@ function formatpoint(lat, lon, azi, dmsformat, prec) {
             azi.toFixed(prec));
   }
 };
-
-
 function GeodesicInverse(input, dmsformat, prec) {
   "use strict";
   var result = {},
       t, p1, p2;
   try {
-    // Input is a blank-delimited line: lat1 lon1 lat2 lon2
     t = input;
     t = t.replace(/^\s+/,"").replace(/\s+$/,"").split(/[\s,]+/,6);
     if (t.length != 4)
@@ -874,8 +797,6 @@ function GeodesicInverse(input, dmsformat, prec) {
   }
   return result;
 };
-
-
 function GeodesicDirect(input, dmsformat, prec) {
   "use strict";
   var result = {},
@@ -911,69 +832,7 @@ function GeodesicDirect(input, dmsformat, prec) {
     result.M1221 = "";
     result.S12 = "";
   }
-//alert("920:  "+result.status);
   return result;
 };
-
-/*
-function GeodesicInversePath(input, dmsformat, prec) {
-  "use strict";
-  var result = {},
-      t, p1, p2, ds12, maxnum, i;
-  try {
-    // Input is a blank-delimited line: lat1 lon1 lat2 lon2 ds12 maxnum
-    t = input;
-    t = t.replace(/^\s+/,"").replace(/\s+$/,"").split(/[\s,]+/,8);
-    if (t.length != 6)
-      throw new Error("Need 6 input items");
-    p1 = dms.DecodeLatLon(t[0], t[1]);
-    p2 = dms.DecodeLatLon(t[2], t[3]);
-    ds12 = parseFloat(t[4]);
-    maxnum = parseInt(t[5]);
-    t = geod.InversePath(p1.lat, p1.lon, p2.lat, p2.lon, ds12, maxnum);
-    result.status = "OK";
-    result.points = ""
-    for (i = 0; i < t.length; ++i)
-      result.points +=
-      formatpoint(t[i].lat, t[i].lon, t[i].azi, dmsformat, prec) + "\n";
-  }
-  catch (e) {
-    result.status = "ERROR: " + e.message;
-    result.points = "";
-  }
-  return result;
-};
-
-function GeodesicArea(input, polyline) {
-  "use strict";
-  var result = {},
-      t, i, pos;
-  try {
-    // Input is a newline-delimited points;
-    // each point is blank-delimited: lat lon
-    t = input;
-    t = t.split(/[\r\n]/);
-    if (t.length > 0 && t[0] == "") t.shift();
-    if (t.length > 0 && t[t.length-1] == "") t.pop();
-    for (i = 0; i < t.length; ++i) {
-      pos = t[i].replace(/^\s+/,"").replace(/\s+$/,"").split(/[\s,]+/,4);
-      if (pos.length != 2)
-        throw new Error("Need 2 items on each line");
-      t[i] = dms.DecodeLatLon(pos[0], pos[1]);
-    }
-    t = geod.Area(t, polyline);
-    result.status = "OK";
-    result.area = t.number + " " +
-      t.perimeter.toFixed(8);
-    if (!polyline)
-      result.area += " " + t.area.toFixed(2);
-  }
-  catch (e) {
-    result.status = "ERROR: " + e.message;
-    result.area = "";
-  }
-  return result;
-};
-*/
 //====================================================================================================
 
