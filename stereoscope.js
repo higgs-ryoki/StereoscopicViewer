@@ -1,5 +1,5 @@
 //	stereoscope.js										2019. 6.20. coded by K. RYOKI
-//																		2023. 1.29. improved
+//																		2023. 5.13. improved
 //
 var mouseEnter=1;
 var mouseExit=0;
@@ -767,7 +767,6 @@ function GeodesicInverse(input, dmsformat, prec) {
   var result = {},
       t, p1, p2;
   try {
-    // Input is a blank-delimited line: lat1 lon1 lat2 lon2
     t = input;
     t = t.replace(/^\s+/,"").replace(/\s+$/,"").split(/[\s,]+/,6);
     if (t.length != 4)
@@ -833,7 +832,6 @@ function GeodesicDirect(input, dmsformat, prec) {
     result.M1221 = "";
     result.S12 = "";
   }
-//alert("920:  "+result.status);
   return result;
 };
 //====================================================================================================
