@@ -437,6 +437,7 @@ function outer_uri() {
 				} else {													//URL www.youtube.com型
 					ytID0=url_Specified.replace('https:\/\/www.youtube.com\/embed\/','');
 					ytID0=ytID0.replace('https:\/\/www.youtube.com\/watch?v=','');
+					ytID0=ytID0.replace('https:\/\/www.youtube.com\/shorts\/','');
 					ytID=ytID0;
 					if (ytID.indexOf('&')!==-1) {
 						ytID=ytID.substring(0, ytID.indexOf("&"));
