@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<!--
+	Stereoscopic Videoviewer for 3D Browsing of local video files ver. 1.0
+		stereoscopic_video4iframe.html
+								2022. 2. 8. coded by K. RYOKI
+								2023. 5. 5. improved
+-->
+<html lang="ja">
+	<head>
+		<meta http-equiv="content-type" content="text/html;charset=utf-8;" />
+		<meta http-equiv="Pragma" content="no-cache">
+		<meta http-equiv="Cache-Control" content="no-store">
+		<title>Stereoscopic_Video4iframe</title>
+		<link href="./../css/basic.css" rel="stylesheet" type="text/css" media="all" />
+		<link href="./../css/stereoscope_video.css" rel="stylesheet" type="text/css" media="all" />
+		<link rel="icon" href="./../img/favicon.ico" />
+		<script src="https://code.jquery.com/jquery-3.6.1.slim.min.js"></script>
+		<script type="text/javascript" src="./../GeneratedItems/CSScriptLib.js"></script>
+		<link rel="stylesheet" href="http://code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css" />
+		<script src="http://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
+	</head>
+	<body id="body">
+		<div id="sampleDropA" ondrop="sampleADrop( event, this ); event.preventDefault();" ondragenter="event.preventDefault();" ondragover="event.preventDefault();">
+			<noscript>
+				<hr>
+				<em>JavaScriptを有効にして下さい。</em><br>
+			</noscript>
+			<main id="main">
+				<label id="label1">
+					<input type="checkbox" id="checkbox2" name="menu_erase" value="1"  onchange="check_menu();">
+						メニュー消去
+				</label>
+				<div id="damy_margin">
+					<br>
+				</div>
+				<div id="set">
+					&emsp;<span class="string" style="z-index:100">傾斜(deg)</span>	&thinsp;
+					<input	 type="number" class="number" id="input_rotate" name="tentacles" min="-180" max="180" value="0" onchange="rotation();">
+					&emsp;再生範囲(s)
+					<input type="number" class="number" id="start_time" name="start_t" onchange="set_start();">
+					&thinsp;~
+					<input type="number" class="number" id="end_time" name="end_t"  onchange="set_end();">
+					&emsp;
+					<input type="button" class="button" id="button_play" value="開始" onclick="start();">
+					&emsp;
+					<input type="button" class="button" id="button_replay" value="再開" onclick="replay();">
+					&emsp;
+					<input type="button" class="button" id="button_stop" value="停止" onclick="stop();">
+					&emsp;
+					<label>
+						<input type="checkbox" id="checkbox1" name="loops" onchange="check_loop();" checked>
+						Loop表示
+					</label>
+					&emsp;速さ
+					<input type="range" class="range" id="speed_range" value="1" onchange="set_speed_renge();">×
+					<input type="number" class="number" id="speed_number" name="speed_s" value="1" onchange="set_speed();">
+					&emsp;ファイル名：
+					<label id="file_show" for="file_span_id">
+						<span id="file_span_id">
+					</span></label>
+					<input type="text" class="text" id="text_uri" value="" placeholder="URL(.mp4 or YouTube)" onchange="outer_uri1();" autocomplete="off"></input>
+					or&thinsp;
+					<label id="file_choice" for="filename">
+					動画選択
+					</label>
+				</div>
+				<div id="upFileWrap">
+					<input type="file" id="filename" accept="video/mp4, video/mpeg, image/webm" style="display:none;" onchange="outer_uri1();">
+						<div id="drop_area">					<!-- ドラッグ&ドロップエリア -->
+							<div class="yokonarabi">
+								<span class='span_draw' id='span_1' width='100%' heigth='90vh' float='left'>
+									<span class='span_draw' id='span_11' >
+										<video id="video1" class="video" controls controlsList="nofullscreen" muted playsinline src="./../img/BIPS.mp4" ondragenter="video_hide()" >
+										</video>
+									</span>
+									<span class='span_draw' id='span_12' >
+										<iframe class="iframe1" id="iframeId1" width="49%" height="480" src="https://www.youtube.com/embed/dNxF4PprFLc?enablejsapi=1&autoplay=0&mute=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" ondragenter="iframe_hide()" >
+										</iframe>
+									</span>
+								</span>
+								<span class='span_draw' id='span_2' width='100%'>
+									<span class='span_draw' id='span_21' >
+										<video id="video2" class="video" controls controlsList="nofullscreen" muted playsinline src="./../img/BIPS.mp4">
+										</video>
+									</span>
+									<span class='span_draw' id='span_22' >
+										<iframe class="iframe1" id="iframeId2" width="49%" height="480" src="https://www.youtube.com/embed/dNxF4PprFLc?enablejsapi=1&autoplay=0&mute=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" ondragenter="iframe_hide()" >
+										</iframe>
+									</span>
+								</span>
+							</div>
+						</div>
+					</input>
+				</div>
+			</main>
+			<footer id="footer">
+				<div id="ending_text">
+					<img id="logo", src="./../img/logo.png", alt="HIGGS Stereoscopic Viewer"></img>
+					<iframe id="counter" src="http://www.eonet.ne.jp/~ryoki/eocountercall_0.html"></iframe>
+					<div id="copyright">
+						<a href= "./../doc/SVwSVd_Manual.pdf" target="_blank" rel="noopener noreferrer">SVw・SVd取扱説明書</a>&emsp;&emsp;
+						<a href= "./../doc/Examples of SVd Usage.pdf" target="_blank" rel="noopener noreferrer">SVd使用例 URL集</a>&emsp;&emsp;
+						Copyright(C) 2022 Hattaso Institute of Geophysics ans Geoscience (HIGGS).<br />
+						All rights reserved.  
+						<a href= "http://www.eonet.ne.jp/~ryoki/index.html" >http://www.eonet.ne.jp/~ryoki/index.html</a>
+					</div>
+					<div id="damy_margin2">
+						<br>
+					</div>
+				</div>
+			</footer>
+		</div>
+		<script type="text/javascript" src="./../js/stereoscope_video4iframe.js"></script>
+		<script type="text/javascript" src="./../js/yt_readymadeiframe_control2.js"></script>
+		<script>
+			function youtube_defer() {
+				var iframes = document.querySelectorAll('.youtube');
+				iframes.forEach(function(iframe){
+					if(iframe.getAttribute('data-src')) {
+						iframe.setAttribute('src',iframe.getAttribute('data-src'));
+					}
+				});
+			}
+			window.addEventListener('load', youtube_defer);
+				//[refference] https://myscreate.com/youtube-defer/
+		</script>
+	</body>
+</html>
