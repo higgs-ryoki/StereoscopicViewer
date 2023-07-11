@@ -56,7 +56,6 @@ if (param_parallax.startsWith('parallax=')==true) {		//視差パラメータが�
 if ((viewpoint_parallax==0)||(viewpoint_parallax==null)) {	//視差パラメータが0または無ければ
 	viewpoint_parallax=-50;														//デフォルト値 (視差を-50kmにする[交差法])
 }
-//$('#parallax').val(viewpoint_parallax);
 viewpoint1_=viewpoint_;
 viewpoint2_=viewpoint_;
 var viewpoint = {																	//初期値定義
@@ -640,7 +639,7 @@ function point_list() {
 			$('#point_indication').val("固視点非表示");
 			$('#sub_point').css('display','inline');
 			point_list_flag=0;
-			change_angle_unit()
+			change_angle_unit();
 	}
 }
 function change_angle_unit() {
@@ -729,7 +728,7 @@ g.Geodesic.prototype.Area = function(points, polyline) {
  * longer than about ds12 (but k cannot exceed maxk, default 20), and returns
  * an array of length k + 1 of objects with fields lat, lon, azi.
  */
- g.Geodesic.prototype.InversePath =
+g.Geodesic.prototype.InversePath =
   function(lat1, lon1, lat2, lon2, ds12, maxk) {
     var line = this.InverseLine(lat1, lon1, lat2, lon2, g.STANDARD),
         k, points, da12, vals, i;
@@ -767,6 +766,7 @@ function GeodesicInverse(input, dmsformat, prec) {
   var result = {},
       t, p1, p2;
   try {
+    // Input is a blank-delimited line: lat1 lon1 lat2 lon2
     t = input;
     t = t.replace(/^\s+/,"").replace(/\s+$/,"").split(/[\s,]+/,6);
     if (t.length != 4)

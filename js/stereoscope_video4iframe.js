@@ -55,7 +55,6 @@ var ytiframeCompo2='" frameborder="0" allow="accelerometer; autoplay; clipboard-
 var youtube_parameter='?enablejsapi=1&autoplay=1&mute=1&fs=0&modestbranding=1&rel=0';
 var param1=location.search.substring(1);					// URLパラメータ文字列(?以降)を取得する
 var param_url=param1;
-
 function tooltip_rewrite(tooltip_name) {
 	$('#file_span_id').removeAttr('title');
 	$('#file_span_id').attr('title',tooltip_name);
@@ -141,6 +140,24 @@ jQuery(function ($) {
 		if (loops.checked==true) {
 			video1.currentTime=startTime.value;
 			video2.currentTime=startTime.value;
+			start();
+		}
+	})
+	//videoの再生開始位置のクリックイベント
+	iframe1.addEventListener('mouseleave', (event) => {
+		if (parseInt(player2.getCurrentTime())!==parseInt(player1.getCurrentTime())) {
+			startTime.value=parseInt(player1.getCurrentTime());
+			player1.seekTo(startTime.value);
+			player2.seekTo(startTime.value);
+		}
+		player1.seekTo(startTime.value);
+		player2.seekTo(startTime.value);
+		start();
+	});
+	iframe1.addEventListener('ended', (event) => {
+		if (loops.checked==true) {
+			player1.seekTo(startTime.value);
+			player2.seekTo(startTime.value);
 			start();
 		}
 	})
@@ -255,6 +272,7 @@ function set_end() {
 }
 //再生開始
 function start() {
+//alert("257 yt_sw = "+yt_sw);
 	if (yt_sw==0) {
 			ytStart_sw=0;
 			video1.pause();								//再生停止
@@ -308,7 +326,8 @@ function replay(set_replay) {
 			video2.play();
 		} else {
 			if (set_replay==null){
-					yt_seek(startTime.value);				//引数なし
+//					yt_seek(startTime.value);				//引数なし
+					yt_seek(ytcurrentTime);				//引数なし
 				} else {
 					yt_seek(set_replay);					//引数あり
 				}
@@ -400,7 +419,7 @@ function outer_uri1() {
 function outer_uri() {
 	startTime.value=null;
 	endTime.value=null;
-	if (param_url !== '') {
+	if (param_url !== '' && url_Specified=="") {
 		url_Specified=param_url;
 	}
 	var url_Specified_array
@@ -462,6 +481,8 @@ function outer_uri() {
 			}
 	}
 	init_speed();
+//wait_main();
+	start();
 	drag_and_drop_event(file_drop_area);
 }
 // ドラッグ&ドロップエリアのイベント
@@ -563,8 +584,9 @@ function sampleADrop( $event, $this ){
 	if ($data!=='') {
 		url_Specified=$data;
 		outer_uri();
+//wait_main();
 		start();
-		stop();
+//		stop();
 	}
 }
 //URL抽出
@@ -579,7 +601,7 @@ function GetUrlInText(text) {
 			return [];
 	}
 }
-/*
+
 //遅延実行
 //(引用)
 //labo(2016,2023):JavaScriptで一定時間待ってから処理を開始する方法, https://laboradian.com/js-wait/
@@ -594,4 +616,3 @@ async function wait_main() {	//for replay()
 function video_click_test() {
 	alert("638  video_click_test() OK!");
 }
-*/

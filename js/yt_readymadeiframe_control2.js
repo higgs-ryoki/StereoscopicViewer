@@ -1,17 +1,17 @@
 /*
 	yt_readymadeiframe_control2.js				2022. 2. 8. coded by K. RYOKI
-												2023. 5. 5. improved
+	                              				2023. 5. 5. improved
 	
 	(引用文献)
-中村享世(2021):YouTube IFrame Player APIの使い方 2021, https://tech.arms-soft.co.jp/entry/2021/07/21/090000 (2022.8.13. 閲覧)
+	中村享世(2021):YouTube IFrame Player APIの使い方 2021, https://tech.arms-soft.co.jp/entry/2021/07/21/090000 (2022.8.13. 閲覧)
 */
 
 // IFrame Player API の読み込みタグを挿入
 
-var tag = document.createElement('script');							// scriptタグを生成
-tag.src = "https://www.youtube.com/iframe_api";						// APIのURLを付与
+var tag = document.createElement('script');                     	// scriptタグを生成
+tag.src = "https://www.youtube.com/iframe_api";                 	// APIのURLを付与
 var firstScriptTag = document.getElementsByTagName('script')[0];	// 生成したタグをセット
-firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);		// HTML上に挿入
+firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);    	// HTML上に挿入
 // 関数onYouTubeIframeAPIReadyでYoutubeプレイヤーを作成
 var player1;
 var player2;
@@ -19,8 +19,10 @@ var players={
 	start: 0,
 	end: 0
 };
-var currentTime;
+var ytcurrentTime;
+var yt_startTime;
 var x=false;
+var playbutton_sw=0;
 
 function onYouTubeIframeAPIReady() {
 	player1 = new YT.Player('iframeId1', {
@@ -37,25 +39,31 @@ function onYouTubeIframeAPIReady() {
 			onStateChange: onPlayerStateChange2
 		}
 	});
+playback_duration();
 }
 // 動画の操作
 function pausebutton() {
-	currentTime=player1.getCurrentTime();
+	ytcurrentTime=player1.getCurrentTime();
 	player1.pauseVideo();
 	player2.pauseVideo();
 }
 function playbutton() {
-	currentTime=startTime.value;
-	if　(endTime.value=="") {
+//wait_main();
+	yt_startTime=startTime.value;
+	if　((endTime.value=="")||(playbutton_sw==0)) {
 			endTime.value=player1.getDuration();
+playbutton_sw=1;
 		} else {
 			preset_endTime(player1.getDuration());
 	}
-	replaybutton();
+player1.seekTo(yt_startTime);
+player2.seekTo(yt_startTime);
+player1.playVideo();
+player2.playVideo();
 }
 function replaybutton() {
-	if (currentTime<=endTime.value) {
-			yt_seek(currentTime);
+	if (ytcurrentTime<=endTime.value) {
+			yt_seek(ytcurrentTime);
 		} else {
 			yt_seek(startTime.value);
 	}
@@ -92,7 +100,7 @@ function onPlayerStateChange1(event) {
 	var ytStatus = event.target.getPlayerState();
 	movie_time=player1.getCurrentTime();
 	if (ytStatus==2 && parseInt(movie_time) !== 0) {
-		startTime.value=movie_time;
+//		startTime.value=movie_time;
 	}
 	player2.seekTo(movie_time);
 	if (ytStatus == YT.PlayerState.ENDED) {		// 再生終了したとき
