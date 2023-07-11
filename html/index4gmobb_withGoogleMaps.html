@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<!--
+	
+		index4local_withGoogleMaps.html
+		Stereoscopic Viewer for 3D Browsing of GSI Globe ver. 2.0
+												2019.11.17. coded by K. RYOKI
+												2023. 1.29. improved
+-->
+<html lang="ja">
+	<head>
+		<title>Stereoscopic Viewer</title>
+		<meta http-equiv="content-type" content="text/html;charset=utf-8;" />
+		<meta http-equiv="Pragma" content="no-cache">
+		<meta http-equiv="Cache-Control" content="no-store">
+		<meta name="viewport" content="width=device-width, maximum-scale=1,user-scalable=0" />
+		<meta name="description" content="Geodesic calculations for an ellipsoid done right" />
+		<meta name="author" content="Charles F. F. Karney">
+		<meta name="keywords" content="
+					geodesics,
+					geodesic distance,
+					geographic distance,
+					shortest path,
+					direct geodesic problem,
+					inverse geodesic problem,
+					distance and azimuth,
+					distance and heading,
+					range and bearing,
+					geographic area,
+					geodesic polygon,
+					spheroidal triangle,
+					latitude and longitude,
+					online calculator,
+					WGS84 ellipsoid,
+					GeographicLib" />
+		<link href="./../css/basic.css" rel="stylesheet" type="text/css" media="all" />
+		<link rel="stylesheet" href="./../resource/jquery/jquery-ui.css" />
+		<link href="./../css/stereoscope.css" rel="stylesheet" type="text/css" media="all" />
+		<link rel="icon" href="./../img/favicon.ico" />
+		<script type="text/javascript" src="./../GeneratedItems/CSScriptLib.js"></script>
+		<script src="./../js/jquery-3.6.0.slim.min.js"></script>
+		<!--
+		<script type="text/javascript" src="./../js/geo_xls.js"></script
+		<py-script src="./../pys/lon-lat.py"></py-script>
+		-->
+		<script type="text/javascript" src="https://geographiclib.sourceforge.io/scripts/geographiclib-geodesic.min.js"></script>
+		<script type="text/javascript" src="https://geographiclib.sourceforge.io/scripts/geographiclib-dms.min.js"></script>
+		<!--
+		Full URLs for latest versions are
+			<script type="text/javascript" src="https://geographiclib.sourceforge.io/scripts/geographiclib-geodesic.min.js"></script>
+			<script type="text/javascript" src="https://geographiclib.sourceforge.io/scripts/geographiclib-dms.min.js"></script>
+			<script type="text/javascript" src="geographiclib-geodesic.min.js"></script>
+			<script type="text/javascript" src="geographiclib-dms.min.js"></script>
+		
+		<script type="text/javascript" src="./../js/geographiclib/geographiclib-geodesic.min.js"></script>
+		<script type="text/javascript" src="./../js/geographiclib/geographiclib-dms.min.js"></script>
+		-->
+		<script type="text/javascript" src="./../js/stereoscope_gmobb.js"></script>
+		<!-- <script type="text/javascript"> -->
+	</head>
+	<body id="body">
+		<noscript>
+			<hr>
+			<em>JavaScriptを有効にして下さい。</em><br>
+		</noscript>
+		<header id="header">
+			<article id="section_0"></article>
+			<article id="p_0"></article>
+		</header>
+		<main id="main">
+			<p id='p_iframe1'></p>
+			<p id='p_iframe2'></p>
+		</main>
+		<footer id="footer">
+			<div>
+				<img id="logo", src="./../img/logo.png", alt="HIGGS Stereoscopic Viewer"><br>
+				</img>
+			</div>
+			<iframe id="counter" src="https://www.eonet.ne.jp/~ryoki/eocountercall_0.html"></iframe>
+			<div id="copyright">
+						<a href= "./../doc/SVwSVd_Manual.pdf" target="_blank" rel="noopener noreferrer">SVw・SVd取扱説明書</a>&emsp;&emsp;
+					<a href= "./indexSVwExample.html" target="_blank" rel="noopener noreferrer">サンプル直リンク集</a>&emsp;&emsp;
+					<a href= "./../doc/Examples of SVw Usage.pdf" target="_blank" rel="noopener noreferrer">SVw使用例 URL集</a>&emsp;&emsp;
+				Copyright(C) 2019 Hattaso Institute of Geophysics ans Geoscience (HIGGS). <br>
+				All rights reserved. 
+				<a href= "http://www.eonet.ne.jp/~ryoki/index.html" >http://www.eonet.ne.jp/~ryoki/index.html</a>
+			</div>
+		</footer>
+	</body>
+</html>
