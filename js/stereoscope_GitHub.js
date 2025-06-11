@@ -21,7 +21,7 @@ if (setting_url.slice(0,4)=="http") {
 	settingURL=new URL(setting_url);
 }
 var url_default='https://maps.gsi.go.jp/globe/index_globe.html#3000000/36/140/10/0/-90/0/&base=ort&ls=ort&disp=1&lcd=pale';
-var others_default='https://higgs-ryoki.github.io/StereoscopicViewer/img/Calcite_vesta.mp4';
+var others_default='https://higgs-ryoki.github.io/StreoscopicViewer/img/Calcite_vesta.mp4';
 var url_init=url_default;
 if (setting_url.indexOf("index_globe.html")>=0) {	//パラメータがglobeの場合
 	url_init=setting_url;
