@@ -3,21 +3,29 @@
 	Stereoscopic Videoviewer for 3D Browsing of local video files ver. 1.0
 		stereoscopic_video4iframe.html
 								2022. 2. 8. coded by K. RYOKI
-								2023. 5. 5. improved
+								2023.10. 3. improved
+								2024. 7. 2. improved
+(Reference)
+	A-FrameでVRコントローラーを使う, Chapter 09, かじるプログラミング, 
+	https://zenn.dev/sdkfz181tiger/books/671f43a6883d34/viewer/7ae759
+	(2021.10.03 更新)
 -->
 <html lang="ja">
 	<head>
+		<title>Stereoscopic_Video4iframe</title>
 		<meta http-equiv="content-type" content="text/html;charset=utf-8;" />
 		<meta http-equiv="Pragma" content="no-cache">
 		<meta http-equiv="Cache-Control" content="no-store">
-		<title>Stereoscopic_Video4iframe</title>
-		<link href="./../css/basic.css" rel="stylesheet" type="text/css" media="all" />
-		<link href="./../css/stereoscope_video.css" rel="stylesheet" type="text/css" media="all" />
-		<link rel="icon" href="./../img/favicon.ico" />
+		<meta charset="UTF-8"/>
+		<script src="https://aframe.io/releases/1.5.0/aframe.min.js"></script>
 		<script src="https://code.jquery.com/jquery-3.6.1.slim.min.js"></script>
 		<script type="text/javascript" src="./../GeneratedItems/CSScriptLib.js"></script>
+		<link href="./../css/basic.css" rel="stylesheet" type="text/css" media="all" />
+		<link href="./../css/stereoscope_video2.css" rel="stylesheet" type="text/css" media="all" />
+		<link rel="icon" href="./../img/favicon.ico" />
 		<link rel="stylesheet" href="http://code.jquery.com/ui/1.13.0/themes/base/jquery-ui.css" />
 		<script src="http://code.jquery.com/ui/1.13.0/jquery-ui.js"></script>
+		<script type="text/javascript" src="https://github.com/john-doherty/long-press-event/blob/master/dist/long-press-event.min.js"></script>
 	</head>
 	<body id="body">
 		<div id="sampleDropA" ondrop="sampleADrop( event, this ); event.preventDefault();" ondragenter="event.preventDefault();" ondragover="event.preventDefault();">
@@ -27,102 +35,144 @@
 			</noscript>
 			<main id="main">
 				<label id="label1">
-					<input type="checkbox" id="checkbox2" name="menu_erase" value="1"  onchange="check_menu();">
+					<input type="checkbox" id="checkbox2" name="menu_erase" value="1" onchange="check_menu();"></input>
 						メニュー消去
 				</label>
-				<div id="damy_margin">
+				<div id="damy_margin1">
 					<br>
 				</div>
 				<div id="set">
-					&emsp;<span class="string" style="z-index:100">傾斜(deg)</span>	&thinsp;
-					<input	 type="number" class="number" id="input_rotate" name="tentacles" min="-180" max="180" value="0" onchange="rotation();">
-					&emsp;再生範囲(s)
-					<input type="number" class="number" id="start_time" name="start_t" onchange="set_start();">
-					&thinsp;~
-					<input type="number" class="number" id="end_time" name="end_t"  onchange="set_end();">
 					&emsp;
-					<input type="button" class="button" id="button_play" value="開始" onclick="start();">
-					&emsp;
-					<input type="button" class="button" id="button_replay" value="再開" onclick="replay();">
-					&emsp;
-					<input type="button" class="button" id="button_stop" value="停止" onclick="stop();">
-					&emsp;
-					<label>
-						<input type="checkbox" id="checkbox1" name="loops" onchange="check_loop();" checked>
-						Loop表示
+					<span class="video_parameter" class="string" id="input_rotate_title" style="z-index:100" >傾斜(deg)</span>	&thinsp;
+					<input type="number" class="video_parameter" class="number" id="input_rotate" name="tentacles" min="-180" max="180" value="0" onchange="rotation();"></input>&emsp;
+					<span class="video_parameter" class="string" style="z-index:100" style="visibility:visible">再生範囲(s)</span>
+					<input type="number" class="video_parameter" class="number" id="start_time" name="start_t" onchange="set_start();">
+						<span id="end_time_title" >~</span>
+					</input>
+					<input type="number" class="video_parameter" class="number" id="end_time" name="end_t"  onchange="set_end();"></input>&emsp;
+					<input type="button" class="video_parameter" class="button" id="button_play" value="開始" onclick="start();"></input>&emsp;
+					<input type="button" class="video_parameter" class="button" id="button_replay" value="再開" onclick="replay();"></input>&emsp;
+					<input type="button" class="video_parameter" class="video_parameter" class="button" id="button_stop" value="停止" onclick="stop();"></input>&emsp;
+					<label class="video_parameter">
+						<input type="checkbox" class="video_parameter" id="checkbox0" name="start_by_L" onchange="check_start();">
+							<font id="checkbox0_title" color="black" >左図で操作</font>&emsp;
+						</input>
 					</label>
-					&emsp;速さ
-					<input type="range" class="range" id="speed_range" value="1" onchange="set_speed_renge();">×
-					<input type="number" class="number" id="speed_number" name="speed_s" value="1" onchange="set_speed();">
-					&emsp;ファイル名：
-					<label id="file_show" for="file_span_id">
-						<span id="file_span_id">
-					</span></label>
-					<input type="text" class="text" id="text_uri" value="" placeholder="URL(.mp4 or YouTube)" onchange="outer_uri1();" autocomplete="off"></input>
-					or&thinsp;
+					<label class="video_parameter">
+						<input type="checkbox" class="video_parameter" id="checkbox1" name="loops" onchange="check_loop();" checked></input>Loop表示
+					</label>&emsp;
+					<span class="video_parameter" class="string" id="speed_title" style="z-index:100" style="visibility:visible">速さ</span>
+					<label>
+						<input type="range" class="video_parameter" class="range" id="speed_range" value="1" onchange="set_speed_range();" style="visibility:visible"></input>
+						<span class="video_parameter" class="string" id="speed_x" style="z-index:100" style="visibility:visible">×</span>
+						<input type="number" class="video_parameter" class="number" id="speed_number" name="speed_s" value="1" onchange="set_speed();" style="visibility:visible"></input>
+					</label>&emsp;
+					<span>
+						<font id="input_width_title" color="black" >図幅(%)</font>&emsp;
+						<input type="number" class="number" id="input_width" name="input_w" onchange="set_width();" min="1" max="48" value="48" ”></input>&thinsp;
+					</span>
+					<span>
+						<font id="input_height_title" color="black" >図高(%)</font>&emsp;
+						<input type="number" class="number" id="input_height" name="input_h"  onchange="set_height();" min="1" max="100" value="50"”></input>&emsp;
+					</span>
+					<input type="checkbox" class="video_parameter" id="checkbox3" name="start_v" onchange="check_vr()" ></input>VR動画&emsp;
+					<input type="checkbox" class="video_parameter" id="checkbox4" name="vr_sound" onchange="check_vr_sound()" value="1" disabled="true" >
+						<font id="checkbox4_title" color="gray" >VR音声</font>&emsp;
+					</input>
+					<span>ファイル指定：</span>
+					<input type="text" class="text" id="text_uri" value="" placeholder="YouTubeURL/FullPathVideoFileName" onchange="outer_uri1();" autocomplete=”off”></input>
+					<span>or</span>
 					<label id="file_choice" for="filename">
-					動画選択
+						動画選択
+					</label>
+					<input type="file" id="filename" accept="video/*" style="display:none;" onchange="outer_uri2();"”></input>&emsp;
+					<span>ファイル名：</span>
+					<label id="file_show">
+						<span id="file_span_id">aho!</span>
 					</label>
 				</div>
 				<div id="upFileWrap">
-					<input type="file" id="filename" accept="video/mp4, video/mpeg, image/webm" style="display:none;" onchange="outer_uri1();">
-						<div id="drop_area">					<!-- ドラッグ&ドロップエリア -->
-							<div class="yokonarabi">
-								<span class='span_draw' id='span_1' width='100%' heigth='90vh' float='left'>
-									<span class='span_draw' id='span_11' >
-										<video id="video1" class="video" controls controlsList="nofullscreen" muted playsinline src="./../img/BIPS.mp4" ondragenter="video_hide()" >
-										</video>
-									</span>
-									<span class='span_draw' id='span_12' >
-										<iframe class="iframe1" id="iframeId1" width="49%" height="480" src="https://www.youtube.com/embed/dNxF4PprFLc?enablejsapi=1&autoplay=0&mute=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" ondragenter="iframe_hide()" >
-										</iframe>
-									</span>
+					<div id="drop_area">					<!-- ドラッグ&ドロップエリア -->
+						<div class="yokonarabi" id="draw_area">
+							<span id='span_1' heigth='50vh' float='left'>
+								<span class='span_draw' id='span_11' >
+									<video id="video1" class="video" width='48vw' height="50vh" controls controlsList="nofullscreen" muted playsinline src="http://moon2.gmobb.jp/higgs_ryoki/StereoscopicViewer/img/BIPS.mp4" ondragenter="video_hide()" ></video>
 								</span>
-								<span class='span_draw' id='span_2' width='100%'>
-									<span class='span_draw' id='span_21' >
-										<video id="video2" class="video" controls controlsList="nofullscreen" muted playsinline src="./../img/BIPS.mp4">
-										</video>
-									</span>
-									<span class='span_draw' id='span_22' >
-										<iframe class="iframe1" id="iframeId2" width="49%" height="480" src="https://www.youtube.com/embed/dNxF4PprFLc?enablejsapi=1&autoplay=0&mute=1" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" ondragenter="iframe_hide()" >
-										</iframe>
-									</span>
+								<span class='span_draw' id='span_12' >
+									<div id="iframeId1"></div>		<!-- iframe1に置き換えるtag　-->
 								</span>
-							</div>
+								<span class='span_draw' id='span_13' >
+									<a-scene id="a-scene1" loading-screen="dotsColor: green; backgroundColor: lightgray" vr-mode-ui="enabled: true" allowfullscreen="no" >
+										<a-sky color="#fff"></a-sky>
+										<a-entity environment="preset: default;"></a-entity>
+										<!--
+										<a-camera id="my_camera1">
+											<a-cursor>
+												<a-entity camera look-controls 
+													cursor="fuse: true; fuseTimeout: 500;" position="0 0 0" 
+													geometry="primitive: ring; radiusInner: 0.001; radiusOuter: 0.0011;" 
+													material="color: white; shader: flat; opacity: 0.1; transparent: true;"
+												</a-entity>
+											</a-cursor>
+										</a-camera>
+										-->
+										<a-assets timeout="30000">
+											<video id="video_A_Frame01" src="http://moon2.gmobb.jp/higgs_ryoki/StereoscopicViewer/img/kujira_thin.mp4" loop=true muted=true" playsinline crossorigin="anonymous" ></video>
+										</a-assets>
+										<a-videosphere id="a-videosphere01" src="#video_A_Frame01"  playsinline controls ></a-videosphere>
+									</a-scene>
+								</span>
+							</span>
+							<span id='span_2'>
+								<span class='span_draw' id='span_21' >
+									<video id="video2" class="video" width='48vw' height="50vh" controls controlsList="nofullscreen" muted playsinline src="http://moon2.gmobb.jp/higgs_ryoki/StereoscopicViewer/img/BIPS.mp4"></video>
+								</span>
+								<span class='span_draw' id='span_22' >
+									<div id="iframeId2"></div>		<!-- iframe2に置き換えるtag　-->
+								</span>
+								<span class='span_draw' id='span_23' >
+									<a-scene id="a-scene2" loading-screen="dotsColor: green; backgroundColor: lightgray" vr-mode-ui="enabled: true" allowfullscreen="no">
+										<a-sky color="#fff"></a-sky>
+										<a-entity environment="preset: default;"></a-entity>
+										<!--
+										<a-camera id="my_camera2">
+											<a-cursor>
+												<a-entity camera look-controls 
+													cursor="fuse: true; fuseTimeout: 500;" position="0 0 0" 
+													geometry="primitive: ring; radiusInner: 0.001; radiusOuter: 0.0011;" 
+													material="color: white; shader: flat; opacity: 0.1; transparent: true;"
+												</a-entity>
+											</a-cursor>
+										</a-camera>
+										-->
+										<a-assets timeout="30000">
+											<video id="video_A_Frame02" src="http://moon2.gmobb.jp/higgs_ryoki/StereoscopicViewer/img/kujira_thin.mp4" loop=true muted=true playsinline width='20' height="20" crossorigin="anonymous"></video>
+										</a-assets>
+										<a-videosphere src="#video_A_Frame02" playsinline controls></a-videosphere>
+									</a-scene>
+								</span>
+							</span>
 						</div>
-					</input>
+					</div>
 				</div>
 			</main>
 			<footer id="footer">
 				<div id="ending_text">
-					<img id="logo", src="./../img/logo.png", alt="HIGGS Stereoscopic Viewer"></img>
+					<img id="logo", src="./../img/logo.png", alt="HIGGS Stereoscopic Viewer">
 					<iframe id="counter" src="http://www.eonet.ne.jp/~ryoki/eocountercall_0.html"></iframe>
-					<div id="copyright">
-						<a href= "./../doc/SVwSVd_Manual.pdf" target="_blank" rel="noopener noreferrer">SVw・SVd取扱説明書</a>&emsp;&emsp;
-						<a href= "./../doc/Examples of SVd Usage.pdf" target="_blank" rel="noopener noreferrer">SVd使用例 URL集</a>&emsp;&emsp;
-						Copyright(C) 2022 Hattaso Institute of Geophysics ans Geoscience (HIGGS).<br />
-						All rights reserved.  
-						<a href= "http://www.eonet.ne.jp/~ryoki/index.html" >http://www.eonet.ne.jp/~ryoki/index.html</a>
-					</div>
-					<div id="damy_margin2">
-						<br>
-					</div>
+					Copyright(C) 2022 Hattaso Institute of Geophysics ans Geoscience (HIGGS).<br />
+					All rights reserved.  
+					<a href= "http://www.eonet.ne.jp/~ryoki/index.html" >
+						http://www.eonet.ne.jp/~ryoki/index.html
+					</a>
+				</div>
+				<div id="damy_margin2">
+					<br>
 				</div>
 			</footer>
 		</div>
 		<script type="text/javascript" src="./../js/stereoscope_video4iframe.js"></script>
 		<script type="text/javascript" src="./../js/yt_readymadeiframe_control2.js"></script>
-		<script>
-			function youtube_defer() {
-				var iframes = document.querySelectorAll('.youtube');
-				iframes.forEach(function(iframe){
-					if(iframe.getAttribute('data-src')) {
-						iframe.setAttribute('src',iframe.getAttribute('data-src'));
-					}
-				});
-			}
-			window.addEventListener('load', youtube_defer);
-				//[refference] https://myscreate.com/youtube-defer/
-		</script>
+		<script type="text/javascript" src = "https://unpkg.com/aframe-physics-system@1.5.0/dist/aframe-physics-system.min.js" > </script> 
 	</body>
 </html>

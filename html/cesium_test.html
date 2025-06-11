@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="utf-8">
+<!--  <script src="./Cesium.js"></script>-->
+  
+<!--jquery-->
+<link rel="stylesheet" href="https://maps.gsi.go.jp/globe/resource/jquery/jquery-ui.css" />
+<script type="text/javascript" src="https://maps.gsi.go.jp/globe/resource/jquery/jquery-2.2.0.min.js"></script>
+<script type="text/javascript" src="https://maps.gsi.go.jp/globe/resource/jquery/jquery-ui.1.9.2.js"></script>
+<script type="text/javascript" src="https://maps.gsi.go.jp/globe/resource/jquery/jquery.ui.touch-punch.js"></script>
+<link rel="stylesheet" href="https://maps.gsi.go.jp/globe/resource/jquery/jquery.alerts.css" type="text/css" media="all" />
+<script type="text/javascript" src="https://maps.gsi.go.jp/globe/resource/jquery/jquery.alerts.js"></script>
+<script type="text/javascript" src="https://maps.gsi.go.jp/globe/resource/jquery/colorpicker/js/colorpicker.js"></script>
+<link rel="stylesheet" type="text/css" href="https://maps.gsi.go.jp/globe/resource/jquery/colorpicker/css/colorpicker.css" />
+<script type="text/javascript" src="https://maps.gsi.go.jp/globe/resource/jquery/jquery.cookie.js"></script>
+<!--/jquery-->
+
+<link rel="stylesheet" href="https://maps.gsi.go.jp/globe/css/gsiglobe.css" />
+
+<!-- <script src="Build/Cesium/Cesium.js"></script> -->
+<script type="text/javascript" src="https://maps.gsi.go.jp/globe/Build/CesiumUnminified/Cesium.js"></script>
+<script type="text/javascript" src="https://maps.gsi.go.jp/globe/resource/JapanGSIGeojsonProvider.js"></script>
+<script type="text/javascript" src="https://maps.gsi.go.jp/globe/resource/JapanGSIImageryProvider.js"></script>
+<script type="text/javascript" src="https://maps.gsi.go.jp/globe/resource/JapanGSICombineImageryProvider.js"></script>
+<script type="text/javascript" src="https://maps.gsi.go.jp/globe/resource/JapanGSIVectorTileProvider.js"></script>
+<script type="text/javascript" src="https://maps.gsi.go.jp/globe/resource/JapanGSITerrainProvider.js"></script>
+<script type="text/javascript" src="https://maps.gsi.go.jp/globe/resource/proj4js-combined.js"></script>
+<script type="text/javascript" src="https://maps.gsi.go.jp/globe/resource/ma.js"></script>
+<script type="text/javascript" src="https://maps.gsi.go.jp/globe/resource/gsiglobe.js"></script>
+<script type="text/javascript" src="https://maps.gsi.go.jp/globe/resource/index.js"></script>
+<script type="text/javascript" src="https://maps.gsi.go.jp/js/photo.js"></script>
+  <!-- <link href="https://maps.gsi.go.jp/globe/Widgets/widgets.css" rel="stylesheet">-->
+  <!-- <link href="./widgets.css" rel="stylesheet">-->
+  <link href="https://maps.gsi.go.jp/globe/Source/Widgets/widgets.css" rel="stylesheet">
+</head>
+<body>
+  <div id="cesiumContainer" style="width: 100%; height: 100%"></div>
+  <script>
+    <!-- Cesium.Ion.defaultAccessToken = 'your_access_token'; -->
+    var viewer = new Cesium.Viewer('cesiumContainer');
+  </script>
+  <script>
+    var flyto_tokyo=function() {
+      viewer.camera.flyTo({destination : Cesium.Cartesian3.fromRadians(2.4438235206124967, 0.6225373613176627, 150000.0)})
+    }
+  </script>
+  <button id="flyto_tokyo" onclick="flyto_tokyo()">東京へflyto</button>
+</body>
+</html>

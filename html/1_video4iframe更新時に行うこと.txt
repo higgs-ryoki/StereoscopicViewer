@@ -1,0 +1,14 @@
+更新時に行うこと
+------------------------------
+1.jsディレクトリに移る
+　　・ふるいstereoscope_video4iframe.jsを消す
+　　・更新するstereoscope_video4iframe_gmobb.jsをuploadする
+　　・ファイル名をstereoscope_video4iframe.jsに変える
+　　・パーミッションを-rwxr-xr-xに変える
+　　・「更新」を押す
+2.htmeディレクトリに移る
+　　・ふるいstereoscopic_video4iframe.htmlを消す
+　　・更新するstereoscope_video4iframe_gmobb.htmlをuploadする
+　　・ファイル名をstereoscope_video4iframe.htmlに変える
+　　・パーミッションを-rwxr-xr-xに変える
+　　・「更新」を押す
