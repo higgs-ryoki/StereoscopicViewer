@@ -16,7 +16,7 @@ p {
 }
 iframe,video{
 	width: 48vw;
-	height:60vh;
+	height:50vh;
 	padding:0px;
 	border: 1px solid black;
 	transform:rotate(0deg);

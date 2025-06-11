@@ -1,0 +1,138 @@
+/* required styles */
+/*
+	down_loader.css
+		css at Stereoscopic Viewer for 3D Browsing of GSI Globe
+								   2019.5.21. coded by K. RYOKI
+*/
+#body {
+	overflow:auto;
+	min-width:100px;
+	min-height:400px;
+	margin: 0 auto;
+	border:0px;
+	padding:0px;
+	background-image:url(./../img/back.gif);
+	background-repeat:repeat;
+}
+#header{
+/*	margin-top:10px;*/
+	margin-left:10px;
+	margin-right:10px;
+	height:155px;
+	min-width:100px;
+}
+#main{
+/*	overflow:auto;*/
+	min-height:400px;
+	min-width:100px;
+	margin-left:10px;
+	margin-right:10px;
+/*	height:80vh;*/
+	position:relative;
+	z-index:1;
+}
+#footer{
+/*	position:relative;*/
+	padding:0px;
+	border:1px;
+	height:20px;
+	font-size:0.5vh;
+	color:#000088;
+	text-align : center;
+	margin-left:10px;
+	margin-right:10px;
+}
+#altitude {
+			width: 8%;
+}
+#button_drow {
+			border: 1px solid #aaa;
+			background-image: -webkit-linear-gradient(top, #fff, #ccc);
+			background-image: linear-gradient(to bottom, #fff, #ccc);
+			border-radius: 4px;
+			color: #000;
+			line-height: 16px;
+			-webkit-transition: none;
+			transition: none;
+			text-shadow: 0 1px 1px rgba(0, 0, 0, .3);
+			width: 100px;
+			height: 20px;
+			font-size: 12pt;
+}
+label img {
+	margin: 2px;
+	padding: 4px;
+}
+#url_1, #url_2 {
+	height:10px;
+	font-size: 8pt;
+}
+#title_url_0 {
+	height:26px;
+	font-size: 12pt;
+}
+#title_url_1, #title_url_2 {
+	height:12px;
+	font-size: 8pt;
+}
+.selection-group input[type="radio"]:checked + label img {
+	background: orange;
+}
+.selection-group input[type="radio"] {
+	display: none;
+}
+
+.drow, .button{
+			border: 1px solid #aaa;
+			background-image: -webkit-linear-gradient(top, #fff, #ccc);
+			background-image: linear-gradient(to bottom, #fff, #ccc);
+			border-radius: 4px;
+			color: #000;
+			line-height: 16px;
+			-webkit-transition: none;
+			transition: none;
+			text-shadow: 0 1px 1px rgba(0, 0, 0, .3);
+			width: 100px;
+			height: 20px;
+			font-size: 12pt;
+}
+.move {
+			border: 1px solid #aaa;
+			background-image: -webkit-linear-gradient(top, #fff, #ccc);
+			background-image: linear-gradient(to bottom, #fff, #ccc);
+			border-radius: 4px;
+			color: #000;
+			line-height: 16px;
+			-webkit-transition: none;
+			transition: none;
+			text-shadow: 0 1px 1px rgba(0, 0, 0, .3);
+			width: 30px;
+			height: 20px;
+			font-size: 10pt;
+}
+.input_value {
+			color: #000;
+			line-height: 16px;
+			-webkit-transition: none;
+			transition: none;
+			text-shadow: 0 1px 1px rgba(0, 0, 0, .3);
+			width: 5%;
+			height: 12px;
+			font-size: 12pt;
+}
+.iframe{
+	height:85vh;
+	padding:0px;
+	border: 1px solid black;
+}
+.url[type="text"] {
+	width:85%;
+	margin-top:1px;
+	height:24px;
+	padding:1px 1px 1px 1px;
+	border: 1px solid #555;
+/*	background: -moz-linear-gradient(top, #ccc, #fff);
+	background: -webkit-linear-gradient(top, #ccc, #fff);
+	background: linear-gradient(#ccc, #fff);
+	background:#fff;*/
+}

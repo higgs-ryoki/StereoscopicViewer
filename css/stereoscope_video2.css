@@ -4,6 +4,7 @@
 		css for Stereoscopic Videoviewer Ver. 1.0
 								2022. 2. 8. coded by K. RYOKI
 								2023. 8.29. improved
+								2024. 5.12. improved
 */
 html{
 	overflow-x:scroll;
@@ -14,7 +15,7 @@ html{
 	padding:0px;
 	border: 1px;
 	user-select:auto;
-	position: relative;
+//	position: relative;
 	z-index: 1;
 }
 #drop_area{
@@ -33,6 +34,17 @@ html{
 	transform:rotate(0deg);
 	user-select:auto;
 	position: relative;
+	z-index: 2;
+}
+#a-scene1, #a-scene2{
+	width: 48vw;
+	height:50vh;
+	padding:0px;
+	border: 1px solid black;
+	transform:rotate(0deg);
+	user-select:auto;
+//	position: relative;
+	 float: left; 
 	z-index: 2;
 }
 .string, #set, #label1{
