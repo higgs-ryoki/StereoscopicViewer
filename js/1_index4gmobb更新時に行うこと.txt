@@ -1,0 +1,15 @@
+index4gmobb更新時に行うこと
+------------------------------
+1.jsディレクトリに移る
+　　・GMOのサーバーのふるいstereoscope_gmobb.jsを消す
+　　・stereoscope_gmobb.jsを更新のためにLocalで書き換える
+　　　(註)28,29行のURLの参照http://localhost/部分をhttp://moon2.gmobb.jp/higgs_ryoki/に変えて，保存する
+　　・保存したstereoscope_gmobb.jsをuploadする
+　　・パーミッションを-rwxr-xr-xに変える
+　　・「更新」を押す
+2.htmeディレクトリに移る
+　　・ふるいindex4gmobb_withGoogleMaps.htmlを消す
+　　・更新するhtmlファイルをuploadする
+　　・ファイル名をindex4gmobb_withGoogleMaps.htmlに変える
+　　・パーミッションを-rwxr-xr-xに変える
+　　・「更新」を押す
