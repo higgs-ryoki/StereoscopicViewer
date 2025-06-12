@@ -1,15 +1,20 @@
 //	stereoscope.js										2019. 6.20. coded by K. RYOKI
-//																		2023. 5.13. improved
+//														2025. 2.16. improved
 //
-var mouseEnter=1;
-var mouseExit=0;
-var mouseLocation=0;
+var sT_id;
+var value;
+var detail_set_activity=0;			//詳細非設定指定
+var url_indication_activity=0;		//瞳孔点非設定指定
+var point_indication_activity=0;	//固視点非設定指定
+var mouseLocation=0;				//0:mouseExit, 1:mouseEnter
 var rewriteMethodText1Status=1;
 var rewriteMethodText2Status=0;
 var rewriteMethodText3Status=0;
+var rewriteMethodText4Status=0;
 var rewriteMethodText1='dblclick';
-var rewriteMethodText2='';
-var rewriteMethodText3='';
+var rewriteMethodText2='mouseleave';
+var rewriteMethodText3='keydown';
+var rewriteMethodText4='mouseup';
 var rewriteMethodEvent=rewriteMethodText1;
 var rewriteMethodText=rewriteMethodEvent;
 //初期の視点位置URL
@@ -21,22 +26,22 @@ if (setting_url.slice(0,4)=="http") {
 	settingURL=new URL(setting_url);
 }
 var url_default='https://maps.gsi.go.jp/globe/index_globe.html#3000000/36/140/10/0/-90/0/&base=ort&ls=ort&disp=1&lcd=pale';
-var others_default='https://higgs-ryoki.github.io/StreoscopicViewer/img/Calcite_vesta.mp4';
+var others_default='http://localhost/StereoscopicViewer/img/Calcite_vesta.mp4';
 var url_init=url_default;
 if (setting_url.indexOf("index_globe.html")>=0) {	//パラメータがglobeの場合
 	url_init=setting_url;
 }
 var URL_init=new URL(url_init);
-var others = {
-	flag:0,
+var others = {	flag:0,
 	url:others_default,
 	previous_url:url_init
 };
+var recovery_url_1;
 var last_url_0=url_init;
 var last_url_1=others_default;
 var last_parallax=-50;
-var last_increments_longitude=0.01;
-var last_increments_latitude=0.01;
+var last_increments_longitude=0.1;
+var last_increments_latitude=0.1;
 var url_origin=URL_init.origin;										//視点位置URLのオリジン
 var url_pathname=URL_init.pathname;								//視点位置URLのパス
 var URL_hash=URL_init.hash.replace("#", "");			//ハッシュデータの分解
@@ -65,11 +70,11 @@ var viewpoint = {																	//初期値定義
 	emphasis: viewpoint_[3],												//高さ強調率
 	azimuth: viewpoint_[4],													//方位角(°)
 	elevation: viewpoint_[5],												//仰角(°)
-	inclination: viewpoint_[6],											//傾斜角(°)
-	map_parameter: viewpoint_[7],										//詳細指定
-	parallax: viewpoint_parallax,										//視差(km)
-	increments_latitude:0.01,												//Δ↑↓(°)
-	increments_longitude:0.01												//Δ←→(°)
+	inclination: viewpoint_[6],												//傾斜角(°)
+	map_parameter: viewpoint_[7],											//詳細指定
+	parallax: viewpoint_parallax,											//視差(km)
+	increments_latitude:0.1,												//Δ↑↓(°)
+	increments_longitude:0.1												//Δ←→(°)
 };
 var increment;
 var googlemap_lati;
@@ -87,24 +92,34 @@ var iframe01_detached='';
 var iframe02_detached='';
 var iframe11_detached='';
 var iframe12_detached='';
-//"use strict";
-//var g = geodesic.Geodesic,
-//    geod = g.WGS84,
-//    dms = DMS;
 var dmsformat=0;
 var prec=4;
 
 // GRS80：測地基準系1980楕円体の定数
 //var ecc2=0.006694380022903415749574948586289306212443890;
-//var ecc=sqrt(ecc2);																//GRS80 離心率：0.081 819 191 042 815 790
-//var a=6378137;																		//      回転楕円体長半径 [m]
+//var ecc=sqrt(ecc2);						//GRS80 離心率：0.081 819 191 042 815 790
+//var a=6378137;							//回転楕円体長半径 [m]
+
+function set_interval(){
+	interval = document.getElementById("time_interval").value;
+}
+
+//event4用 2024.12.27.付加
+const moveElm0 = $("#container");
+const moveElm1 = $("#iframe01");
+const moveElm2 = $("#iframe02");
+var timeInterval= document.getElementById("time_interval");
+let loopCount = 0;
+var interval;
+let lastSrc;
+let currentSrc;
 
 //HTML書き換え用
-var section_0_html='<span id="main_url"><span id="view_index">作成元図</span><span id="title_url_0"><input type="text" class="url" id="url_0" size="10" onchange="url_rewrite(0)"/><input type="button" class="button1" id="url_indication" onclick="url_text()" value="瞳孔点表示" /><input type="button" class="button1" id="point_indication" onclick="point_list()" value="固視点表示" />\n</span><p id="p_blue_color"><p class="span_value" id="sub_url">左図瞳孔位置<input type="text" class="url" id="url_1" onchange="url_rewrite(1)">\n右図瞳孔位置<input type="text" class="url" id="url_2" onchange="url_rewrite(2)"></p><span id="sub_point" ><form name="angle_units">&emsp;&emsp;&emsp;&thinsp;&thinsp;固視点の計算精度<select name="calc_prec" id="calc_id" onchange="change_angle_unit()" size=1><option value="0" selected> 1m 0.00001d 0.1"</option><option value="1"> 100mm 0.01"</option><option value="2"> 10mm 0.001"</option><option value="3"> 1mm 0.0001"</option><option value="4"> 100um 0.00001"</option><option value="5"> 10um 0.000001"</option><option value="6"> 1um 0.0000001"</option><option value="7"> 100nm 0.00000001"</option><option value="8"> 10nm 0.000000001"</option><option value="9"> 1nm 0.0000000001"</option></select>&emsp;&emsp;固視点の地表投影点での緯度,経度,方位角(deg),各瞳孔位置からそれぞれの図中心点までの測地距離(m) : <span id="angles_vmp"></form></span></p></span>';
-//var section_0_html='<span id="main_url"><span id="view_index">作成元図</span><span id="title_url_0"><input type="text" class="url" id="url_0" size="10" onchange="url_rewrite(0)"/><input type="button" class="button1" id="url_indication" onclick="url_text()" value="瞳孔点表示" /><input type="button" class="button1" id="point_indication" onclick="point_list()" value="固視点表示" />\n</span><p id="p_blue_color"><p class="span_value" id="sub_url">左図瞳孔位置<input type="text" class="url" id="url_1" onchange="url_rewrite(1)">\n右図瞳孔位置<input type="text" class="url" id="url_2" onchange="url_rewrite(2)></p><span id="sub_point" ><form name="angle_units">&emsp;&emsp;&emsp;&thinsp;&thinsp;固視点の計算精度<select name="calc_prec" id="calc_id" onchange="change_angle_unit()" size=1><option value="0" selected> 1m 0.00001d 0.1"</option><option value="1"> 100mm 0.01"</option><option value="2"> 10mm 0.001"</option><option value="3"> 1mm 0.0001"</option><option value="4"> 100um 0.00001"</option><option value="5"> 10um 0.000001"</option><option value="6"> 1um 0.0000001"</option><option value="7"> 100nm 0.00000001"</option><option value="8"> 10nm 0.000000001"</option><option value="9"> 1nm 0.0000000001"</option></select>&emsp;&emsp;固視点の地表投影点での緯度,経度,方位角(deg),各瞳孔位置からそれぞれの図中心点までの測地距離(m) : </form></span><span id="angles_vmp"></span></p></span>';
+var section_0_html='<span id="main_url"><span id="view_index">作成元図</span><span id="title_url_0"><input type="text" class="url" id="url_0" size="10" onchange="url_rewrite(0)"/><br><input type="button" class="button1" id="detail" onclick="detail_set()" value="詳細設定" />  <input type="button" class="button1" id="url_indication" onclick="url_text()" value="瞳孔点表示" />  <input type="button" class="button1" id="point_indication" onclick="point_list()" value="固視点表示" />\n</span><p id="p_blue_color"><p class="span_value" id="sub_url">左図瞳孔位置<input type="text" class="url" id="url_1" onchange="url_rewrite(1)">\n右図瞳孔位置<input type="text" class="url" id="url_2" onchange="url_rewrite(2)"></p><span id="sub_point" ><form name="angle_units">固視点の計算精度<select name="calc_prec" id="calc_id" onchange="change_angle_unit()" size=1><option value="0" selected> 1m 0.00001d 0.1"</option><option value="1"> 100mm 0.01"</option><option value="2"> 10mm 0.001"</option><option value="3"> 1mm 0.0001"</option><option value="4"> 100um 0.00001"</option><option value="5"> 10um 0.000001"</option><option value="6"> 1um 0.0000001"</option><option value="7"> 100nm 0.00000001"</option><option value="8"> 10nm 0.000000001"</option><option value="9"> 1nm 0.0000000001"</option></select>&emsp;&emsp;固視点の地表投影点での緯度,経度,方位角(deg),各瞳孔位置からそれぞれの図中心点までの測地距離(m) : <span id="angles_vmp"></form></span></p></span>';
 var section_1_html='<span id="main_url">表示対象<nobr id="title_url_0"><input type="text" class="url" id="url_0" size="10" onchange="url_rewrite(0)"> </nobr></span>';
-var p_0_html='<section><span class="span_value">&emsp;瞳孔点&thinsp;&thinsp;&thinsp;高　度<input type="text" class="input_value" id="altitude" onchange="altitude()">(m)&emsp;&emsp;緯　度<input type="text" class="input_value" id="latitude" onchange="latitude()">(deg)&emsp; 経　度<input type="text" class="input_value" id="longitude" onchange="longitude()">(deg)&emsp; 視　差<input type="text" class="input_value" id="parallax" onchange="parallax()">(km, <small><small>正：平行法</small></small>) </span><br></section><section><span class="span_value">&emsp;<input type="button" class="move" id="button_up" onclick="up()" value="↑" > </span><span class="span_value">&emsp; 高度強調率<input type="text" class="input_value" id="emphasis" onchange="emphasis()">&emsp;&emsp;&emsp;&thinsp;&thinsp; 方位角<input type="text" class="input_value" id="azimuth" onchange="azimuth()">(deg)&emsp; 仰　角<input type="text" class="input_value" id="elevation" onchange="elevation()">(deg)&emsp; 傾斜角<input type="text" class="input_value" id="inclination" onchange="inclination()">(deg) </span><br><span class="span_value"><input type="button" class="move" id="button_left" onclick="left()" value="←" > <input type="button" class="move" id="button_right" onclick="right()" value="→" > </span><span class="span_value">&thinsp;Δ↑↓<input type="text" class="input_value" id="increments_latitude" onchange="increments_latitude()">(deg)&thinsp; &emsp;&emsp;&emsp;Δ←→<input type="text" class="input_value" id="increments_longitude" onchange="increments_longitude()">(deg)　　 </span><br><span class="span_value">&emsp;<input type="button" class="move" id="button_down" onclick="down()" value="↓" > </span><span>&emsp;&thinsp;<input type="button" class="button" id="button_drow" onclick="url_rewrite(0)" value="再描画">  <input type="button" class="button" id="google_map" onclick="open_GoogleMap()" value="google map"> <input type="button" class="button" id="google_earth" onclick="open_GoogleEarth()" value="google earth"> <input type="button" class="button" id="button_others" onclick="click_others()" value="others"> <input type="number" id="input_rotate" name="tentacles" min="-180" max="180" value="0" onchange="rotation()"> <span class="check">&thinsp;地図更新方法：</span><input type="checkbox" id="rewriteMethod1" name="rewriteMethod" class="check" value="dblclick" checked> <label for="rewriteMethod1" class="check" >Double Click</label><input type="checkbox" id="rewriteMethod2" name="rewriteMethod" class="check" value="mouseleave"> <label for="rewriteMethod2" class="check" >Mouse Leave</label><input type="checkbox" id="rewriteMethod3" name="rewriteMethod" class="check" value="keydown"> <label for="rewriteMethod3" class="check" >Shift-Key</label></span> <input type="button" class="button" id="button_innertiles" onclick="click_innertiles()" value="innertiles"></section> ';
-var p_1_html='<section><input type="button" class="button" id="button_drow" onclick="url_rewrite(0)" value="再描画">  <input type="button" class="button" id="button_others" onclick="click_others()" value="others"> 　傾斜(deg)&thinsp;<input type="number" id="input_rotate" name="tentacles" min="-180" max="180" value="0" onchange="rotation()">&thinsp;<input type="button" class="button" id="button_innertiles" onclick="click_innertiles()" value="innertiles"> <input type="button" class="button" id="button_innervideo" onclick="video_viewer()" value="LocalFile(NewTab)"></section>';
+var p_0_html='<section id="p_0_1"><span class="span_value">&emsp;<input type="button" class="move" id="button_up" onclick="up()" value="↑" >&emsp;瞳孔点&thinsp;&thinsp;&thinsp;高　度<input type="text" class="input_value" id="altitude" onchange="altitude()">(m)&emsp;&emsp;緯　度<input type="text" class="input_value" id="latitude" onchange="latitude()">(deg)&emsp; 経　度<input type="text" class="input_value" id="longitude" onchange="longitude()">(deg)&emsp; 	<input type="checkbox" id="auto_parallax" name="autoParallax" class="check0" onclick="check_parallax()" value="autoParallax" ><label for="auto_parallax">視差指定 </label></input><span id="show_parallax" hidden ><input type="text" class="input_value" id="parallax" onchange="parallax()">(km, <small><small>正：平行法</small></small>)</span>	</span></section><section id="p_0_2"><span class="span_value"><input type="button" class="move" id="button_left" onclick="left()" value="←" > <input type="button" class="move" id="button_right" onclick="right()" value="→" > </span><span class="span_value">&emsp;高度強調率<input type="text" class="input_value" id="emphasis" onchange="emphasis()">&emsp;&emsp;&emsp;&emsp;方位角<input type="text" class="input_value" id="azimuth" onchange="azimuth()">(deg)&emsp; 仰　角<input type="text" class="input_value" id="elevation" onchange="elevation()">(deg)&emsp; 傾斜角<input type="text" class="input_value" id="inclination" onchange="inclination()">(deg) </span><br><span class="span_value"><span class="span_value">  &emsp;<input type="button" class="move" id="button_down" onclick="down()" value="↓" ></span><span class="span_value">&emsp;&emsp;&emsp;Δ↑↓<input type="text" class="input_value" id="increments_latitude" onchange="increments_latitude()">(deg)&thinsp;&thinsp;&thinsp;&emsp;&emsp;&emsp;Δ←→<input type="text" class="input_value" id="increments_longitude" onchange="increments_longitude()">(deg)　  <input type="button" id="button_drow" class="button" onclick="url_rewrite(0)" value="再描画">  <input type="button" class="button" id="google_map" onclick="open_GoogleMap()" value="google map">  <input type="button" class="button" id="google_earth" onclick="open_GoogleEarth()" value="google earth">  <input type="button" class="button" id="button_others" onclick="click_others()" value="others">  <input type="number" id="input_rotate" name="tentacles" min="-180" max="180" value="0" onchange="rotation()"><br></span></section><span id="p_0_4">地図更新方法：<input type="checkbox" id="rewriteMethod1" name="rewriteMethod" class="check" value="dblclick" checked><label for="rewriteMethod1" class="check" >Double Click </label></input><input type="checkbox" id="rewriteMethod2" name="rewriteMethod" class="check" value="mouseleave"><label for="rewriteMethod2" class="check" >Mouse Leave </label></input><input type="checkbox" id="rewriteMethod3" name="rewriteMethod" class="check" value="keydown"><label for="rewriteMethod3" class="check">Shift-Key </label></input><input type="checkbox" id="rewriteMethod4" name="rewriteMethod" class="check" value="mouseup" onchange="mouseMoved()"><label for="rewriteMethod4" class="check">Left Map Moved </label><span id="show_timeInterval" > [interval <input type="number" class="input_value" id="time_interval" min="10" max="5000" value="3000" step="10" onchange="set_interval()" style="width:50px">&nbsp;(msec)]	</input></span></input></span>';
+//var p_0_light_html='<section><span class="span_value">&emsp;瞳孔点&thinsp;&thinsp;&thinsp;視　差<input type="text" class="input_value" id="parallax_light" onchange="parallax()">(km, <small><small>正：平行法</small></small>) </span><br>';
+var p_1_html='<section id="p_1"><input type="button" class="button" id="button_drow" onclick="url_rewrite(0)" value="再描画">  <input type="button" class="button" id="button_others" onclick="click_others()" value="others"> 　傾斜(deg)&thinsp;<input type="number" id="input_rotate" name="tentacles" min="-180" max="180" value="0" onchange="rotation()">&thinsp;<input type="button" class="button" id="button_innertiles" onclick="click_innertiles()" value="innertiles"> <input type="button" class="button" id="button_innervideo" onclick="video_viewer()" value="LocalFile(NewTab)"></section>';
 var iframe01_html='<iframe class="iframe" id="iframe01" title="Inline Frame Left" width=49% sandbox="allow-same-origin allow-forms allow-scripts allow-top-navigation" allow="fullscreen \'none\'"></iframe>';
 var iframe02_html='<iframe class="iframe" id="iframe02" title="Inline Frame Right" width=49% sandbox="allow-same-origin allow-forms allow-scripts allow-top-navigation" allow="fullscreen \'none\'" muted></iframe>';
 var iframe11_html='<iframe class="iframe" id="iframe11" title="Inline Frame Left" width=49% sandbox="allow-same-origin allow-forms allow-scripts allow-top-navigation" allow="fullscreen \'none\'"></iframe>';
@@ -121,25 +136,26 @@ jQuery(function() {
 	$('#iframe01').on('load', function() {
 		event_act();
 	})
+	detail_set();
 	// 子フレームのイベント
 	//表示初期値
-	$('#altitude').val(viewpoint.altitude);					//高度
-	$('#latitude').val(viewpoint.latitude);					//緯度(°)
-	$('#longitude').val(viewpoint.longitude);				//経度(°)
-	$('#emphasis').val(viewpoint.emphasis);					//高さ強調率
-	$('#azimuth').val(viewpoint.azimuth);						//方位角(°)
-	$('#elevation').val(viewpoint.elevation);				//仰角(°)
-	$('#inclination').val(viewpoint.inclination);		//傾斜角(°)
-	$('#parallax').val(viewpoint.parallax);					//視差(km)
-	$('#increments_latitude').val(viewpoint.increments_latitude);		//Δ↑↓(°)
+	$('#altitude').val(viewpoint.altitude);							//高度
+	$('#latitude').val(viewpoint.latitude);							//緯度(°)
+	$('#longitude').val(viewpoint.longitude);						//経度(°)
+	$('#emphasis').val(viewpoint.emphasis);							//高さ強調率
+	$('#azimuth').val(viewpoint.azimuth);							//方位角(°)
+	$('#elevation').val(viewpoint.elevation);						//仰角(°)
+	$('#inclination').val(viewpoint.inclination);					//傾斜角(°)
+	$('#parallax').val(viewpoint.parallax);							//視差(km)
+	$('#increments_latitude').val(viewpoint.increments_latitude);	//Δ↑↓(°)
 	$('#increments_longitude').val(viewpoint.increments_longitude);	//Δ←→(°)
 	//視点位置URL
 	$('#url_0').val(make_url_0());									//視点位置URL作成
 	set_view_url(0,viewpoint_,viewpoint.parallax);
 	$('#iframe01').attr('src',"");									//左図消去
-//	$('#iframe01').attr('src').onload=alert("133 ");
+	$('#show_timeInterval').css('visibility','hidden');				//Left Map Movedのintervalを隠しておく
 	iframes_change();
-	define_event();
+define_event();
 	if ((setting_url=="") || (setting_url.indexOf("index_globe.html")>=0)) { 	//パラメータがない，または，globeの場合
 			others.flag=0;
 			others.url=others_default;
@@ -169,29 +185,39 @@ jQuery(function() {
 		// もしrewriteMethod3がチェック状態だったら
 		if ($(rewriteMethod3).prop('checked')) {
 				rewriteMethodText3Status=1;
-				rewriteMethodText3=rewriteMethod3.value;
+				rewriteMethodText3=rewriteMethod3.value+' ';
 			} else {
 				rewriteMethodText3Status=0;
 				rewriteMethodText3='';
 		}
-		rewriteMethodEvent=rewriteMethodText1+rewriteMethodText2;
-		rewriteMethodText=rewriteMethodText1+rewriteMethodText2+rewriteMethodText3;
+		// もしrewriteMethod4がチェック状態だったら
+		if ($(rewriteMethod4).prop('checked')) {
+				rewriteMethodText4Status=1;
+				rewriteMethodText4=rewriteMethod4.value;
+			} else {
+				rewriteMethodText4Status=0;
+				rewriteMethodText4='';
+		}
+		rewriteMethodEvent=rewriteMethodText1+rewriteMethodText2+rewriteMethodText3+rewriteMethodText4;
+		rewriteMethodText=rewriteMethodText1+rewriteMethodText2+rewriteMethodText3+rewriteMethodText4;
 		event_act();
 	})
 })
+//-----------------------------------------------------------------------insert 20250219
 function define_event() {
 	// 子フレームへ入った際のイベント
 	$('#iframe01').on('mouseenter', function () {
-		mouseLocation=mouseEnter;
+		mouseLocation=1;							//mouseEnter;
 	});
 	// 子フレームから出た際のイベント
 	$('#iframe01').on('mouseleave', function () {
-		mouseLocation=mouseExit;
+		mouseLocation=0;							//mouseExit;
 	});
+
 	// Shiftキー(keyCode 16)を押したときのイベント
 	$(document).on('keydown',function(){	
 		if (event.keyCode===16 && rewriteMethodText3Status==1){
-			if (mouseLocation==mouseEnter){
+			if (mouseLocation==1){
 				iframes_redisplay01();
 			}
 		}
@@ -203,6 +229,8 @@ function event_act() {
 	$('#header').contents().on('dblclick', iframes_redisplay01);
 	$('#iframe01').contents().off();
 	$('#iframe01').contents().on(rewriteMethodEvent, iframes_redisplay01);
+	//$('#p_iframe1').contents().off();
+	//$('#p_iframe1').contents().on(rewriteMethodEvent, iframes_redisplay01);
 	$('#iframe02').contents().off();
 	$('#iframe02').contents().on('dblclick', iframes_redisplay02);
 }
@@ -213,9 +241,9 @@ function box_change() {
 	$('#longitude').val(viewpoint.longitude);				//経度(°)
 	$('#parallax').val(viewpoint.parallax);					//視差(km)
 	$('#emphasis').val(viewpoint.emphasis);					//高さ強調率
-	$('#azimuth').val(viewpoint.azimuth);						//方位角(°)
+	$('#azimuth').val(viewpoint.azimuth);					//方位角(°)
 	$('#elevation').val(viewpoint.elevation);				//仰角(°)
-	$('#inclination').val(viewpoint.inclination);		//傾斜角(°)
+	$('#inclination').val(viewpoint.inclination);			//傾斜角(°)
 }
 //視点位置項目の変更
 function url_change(input_url){
@@ -269,7 +297,7 @@ function url_rewrite(url_number) {								//url_number=0:viewpoint, =1:left, =2:
 						$('#p_iframe2').html(iframe02_html);
 				}
 				viewpoint_=change_viewpoint($('#url_0').val());
-				event_act;
+				event_act();
 				set_view_url(url_number,viewpoint_,viewpoint.parallax);	//緯度・経度を変えて両図URL作成
 				iframes_change();													//再描画
 			}
@@ -287,7 +315,7 @@ function url_rewrite(url_number) {								//url_number=0:viewpoint, =1:left, =2:
 				} else {
 					$('#rewriteMethod2').prop('checked', false);
 			}
-			if (rewriteMethodText3Status==1) {					// もしrewriteMethod1がチェック状態だったら
+			if (rewriteMethodText3Status==1) {					// もしrewriteMethod3がチェック状態だったら
 					$('#rewriteMethod3').prop('checked', true);
 				} else {
 					$('#rewriteMethod3').prop('checked', false);
@@ -295,8 +323,8 @@ function url_rewrite(url_number) {								//url_number=0:viewpoint, =1:left, =2:
 		break;
 		case 2:		//right　[右図ＵＲＬ入力時]
 			iframes_redisplay02();
-			$('#url_0').val(set_view_url(0,$('#url_2').val(),$('#parallax').value));
-			$('#url_1').val(set_view_url(1,$('#url_2').val(),$('#parallax').value));
+			$('#url_0').val(set_view_url(0,$('#url_2').val(),$('#parallax').val));
+			$('#url_1').val(set_view_url(1,$('#url_2').val(),$('#parallax').val));
 		break;
 	}
 	box_change();
@@ -329,15 +357,16 @@ function iframes_change(){
 	$('#iframe02').attr('src',"");									//右図消去
 	window.setTimeout("$('#iframe01').attr('src',$('#url_1').val())", 50);	//左図再描画
 	window.setTimeout("$('#iframe02').attr('src',$('#url_2').val())", 50);	//右図再描画
-//			var elev1=$('#elevation').val();
-const s12=$('#altitude').val()/Math.tan(-$('#elevation').val()/180*Math.PI);
-angles_vmp_rewrite(s12);
-
+	var s12=$('#altitude').val()/Math.tan(-$('#elevation').val()/180*Math.PI);
+	angles_vmp_rewrite(s12);
 }
 //視点高度 変更
 function altitude() {
 	value=$('#altitude').val();
 	viewpoint.altitude=value;
+	if ($('#auto_parallax').prop('checked')==false) {
+		calc_parallax();
+	}
 	change_element(0,value);
 }
 //緯度 変更
@@ -351,6 +380,24 @@ function longitude() {
 	value=$('#longitude').val();
 	viewpoint.longitude=value;
 	change_element(2,value);
+}
+//視差指定　選択
+function check_parallax() {
+	if ($('#auto_parallax').prop('checked')==true) {
+			//視差を入力指定するとき
+			$('#show_parallax').show();
+		} else {
+			//視差を自動計算するとき
+			$('#show_parallax').hide();
+			calc_parallax();
+			parallax();
+	}
+	url_rewrite(1);
+	event_act();
+}
+//視差指定
+function calc_parallax() {
+	$('#parallax').val(-50.0/3000000.0*viewpoint.altitude);
 }
 //高度強調率 変更
 function emphasis() {
@@ -490,7 +537,11 @@ function iframes_redisplay01() {
 	var text1_url=new URL(encodeURI(text1));
 	$("#url_1").val(text1);
 	var url_1_hash = text1_url.hash;								// URLパラメータ文字列のアンカー（#以降の部分）を取得
-	viewpoint1_=url_1_hash.replace("#", "").split('/');		//「/(ダッシュ)」で区切って分割する
+	viewpoint1_=url_1_hash.replace("#", "").split('/');				//「/(ダッシュ)」で区切って分割する
+	if ($('#auto_parallax').prop('checked')==false) {
+		calc_parallax();
+		viewpoint.parallax=$('#parallax').val();
+	}
 	set_view_url(1,viewpoint1_,viewpoint.parallax);
 }
 //右図を基に左図を描画
@@ -499,19 +550,30 @@ function iframes_redisplay02() {
 	var text2_url=new URL(encodeURI(text2));
 	$("#url_2").val(text2);
 	var url_2_hash = text2_url.hash;								// URLパラメータ文字列のアンカー（#以降の部分）を取得
-	viewpoint2_=url_2_hash.replace("#", "").split('/');		//「/(ダッシュ)」で区切って分割する
+	viewpoint2_=url_2_hash.replace("#", "").split('/');				//「/(ダッシュ)」で区切って分割する
 	set_view_url(2,viewpoint2_,viewpoint.parallax);
 }
 //瞳孔点表示
 function url_text() {
 	if (url_indication_flag==0) {										//url_1,url_2を表示しない場合
-		$('#url_indication').val("瞳孔点表示");
-		$('#sub_url').hide();
-		url_indication_flag=1;
-	} else {																				//url_1,url_2を表示する場合
-		$('#url_indication').val("瞳孔点非表示");
-		$('#sub_url').show();
-		url_indication_flag=0;
+			$('#url_indication').val("瞳孔点表示");
+			$('#sub_url').hide();
+			url_indication_flag=1;
+		} else {														//url_1,url_2を表示する場合
+			$('#url_indication').val("瞳孔点非表示");
+			$('#sub_url').show();
+			url_indication_flag=0;
+	}
+}
+//Ｌｅｆｔ　Ｍａｐ　Ｍｏｖｅｄをチェックした場合
+function mouseMoved() {
+	let element = document.getElementById('rewriteMethod4');
+	if (element.checked===true) {										//左図の移動を検出する場合
+			$('#show_timeInterval').css('visibility','visible');
+			check4Start($("#url_1").val());
+		} else {														//左図の移動を検出しない場合
+			$('#show_timeInterval').css('visibility','hidden');
+			check4End($('iframe01').attr('src'));
 	}
 }
 //othersでのiframe回転
@@ -553,7 +615,7 @@ function open_GoogleEarth() {
 	window_status2=window.open(google_map2_url,sub_map2,'left=458,width=450,height=500');
 }
 //url_0の緯度lati（度）,経度long（度）と視差(km)から, url_1,url_2の緯度・経度を計算 (google map用)
-//註： google mapの測地系は「世界測地系 WGS84」なので，厳密な位置関係にはなっていない
+//	註： google mapの測地系は「世界測地系 WGS84」なので，厳密な位置関係にはなっていない
 function set_google_lati_longi(url_number) {
 	var lati=$('#latitude').val();
 	var longi=$('#longitude').val();
@@ -563,14 +625,14 @@ function set_google_lati_longi(url_number) {
 	googlemap_lati=0;
 	googlemap_longi=0;
 	switch (url_number) {
-		case 1:																				//viewpoint1　[視点URL入力時]
-			distance=-parallax_length*500;								//左図視点作成
+		case 1:																	//viewpoint1　[視点URL入力時]
+			distance=-parallax_length*500;										//	左図視点作成
 		break;
-		case 2:																				//viewpoint2　[視点URL入力時]
-			distance=+parallax_length*500;								//右図視点作成
+		case 2:																	//viewpoint2　[視点URL入力時]
+			distance=+parallax_length*500;										//	右図視点作成
 		break;
 	}
-	googlemap_lati=ido(lati,longi,distance,parseFloat(azimuth)+90);			//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
+	googlemap_lati=ido(lati,longi,distance,parseFloat(azimuth)+90);		//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
 	googlemap_longi=keido(lati,longi,distance,parseFloat(azimuth)+90);	//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
 }
 function set_googlemap_type() {
@@ -601,52 +663,50 @@ function url_param(keyname, target_url) {
 }
 //視点URLの作成
 function set_view_url(url_number,url_source,parallax_length) {	//視点No., 元のURL, 視差(km)
+var url_set;
 	url_source2=url_source[1];											//視点位置の緯度・経度を保存
-//alert(url_source[1]);
 	url_source3=url_source[2];
 	switch (url_number) {
 		case 0:																				//viewpoint　[視点URL入力時]
 			increment=parallax_length*500;							//左図視点作成
-//			url_source[1]=ido(url_source2,url_source3,increment,(parseFloat(url_source[4])));		//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
-//			url_source[2]=keido(url_source2,url_source3,increment,(parseFloat(url_source[4])));	//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
-			url_source[1]=ido(url_source2,url_source3,increment,(parseFloat(url_source[4]))-90.0);		//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
-			url_source[2]=keido(url_source2,url_source3,increment,(parseFloat(url_source[4]))-90.0);	//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
+			url_source[1]=ido(url_source2,url_source3,increment,(parseFloat(url_source[4]))-90.0);
+				//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
+			url_source[2]=keido(url_source2,url_source3,increment,(parseFloat(url_source[4]))-90.0);
+				//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
 			$('#url_1').val(decodeURI(url_origin+url_pathname+"#"+url_source.join('/')));
 			increment=+parallax_length*500;							//右図視点作成
-//			url_source[1]=ido(url_source2,url_source3,increment,(parseFloat(url_source[4])));		//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
-//			url_source[2]=keido(url_source2,url_source3,increment,(parseFloat(url_source[4])));	//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
-//			$('#url_2').val(decodeURI(url_origin+url_pathname+"#"+url_source.join('/')));
-			url_source[1]=ido(url_source2,url_source3,increment,(parseFloat(url_source[4]))+90.0);		//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
-			url_source[2]=keido(url_source2,url_source3,increment,(parseFloat(url_source[4]))+90.0);	//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
+			url_source[1]=ido(url_source2,url_source3,increment,(parseFloat(url_source[4]))+90.0);
+				//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
+			url_source[2]=keido(url_source2,url_source3,increment,(parseFloat(url_source[4]))+90.0);
+				//url_0の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
 			$('#url_2').val(decodeURI(url_origin+url_pathname+"#"+url_source.join('/')));
 		break;
 		case 1:																				//left　     [左図URL入力時]
-			increment=-parallax_length*500;								//視点URL作成
-//			url_source[1]=ido(url_source2,url_source3,increment,(parseFloat(url_source[4])));		//url_1の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
-//			url_source[2]=keido(url_source2,url_source3,increment,(parseFloat(url_source[4])));		
-//			url_source[1]=ido(url_source2,url_source3,increment,(			url_source[1]=ido(url_source2,url_source3,increment,(parseFloat(url_source[4])));		//url_2の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
-			url_source[1]=ido(url_source2,url_source3,increment,(parseFloat(url_source[4]))-90.0);		//url_1の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
-			url_source[2]=keido(url_source2,url_source3,increment,(parseFloat(url_source[4]))-90.0);	//url_1の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
+			increment=-parallax_length*500;							//視点URL作成
+			url_source[1]=ido(url_source2,url_source3,increment,(parseFloat(url_source[4]))-90.0);
+				//url_1の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
+			url_source[2]=keido(url_source2,url_source3,increment,(parseFloat(url_source[4]))-90.0);
+				//url_1の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
 			$('#url_0').val(decodeURI(url_origin+url_pathname+"#"+url_source.join('/')));
-			increment=-parallax_length*1000;							//右図視点作成
-//			url_source[2]=keido(url_source2,url_source3,increment,(parseFloat(url_source[4])));	//url_2の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
-//			url_source[2]=keido(url_source2,url_source3,increment,(parseFloat(url_source[4])-90.0));	//url_1の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
-			url_source[1]=ido(url_source2,url_source3,increment,(parseFloat(url_source[4])-90.0));		//url_1の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
-			url_source[2]=keido(url_source2,url_source3,increment,(parseFloat(url_source[4])-90.0));	//url_1の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
+			increment=-parallax_length*1000;						//右図視点作成
+			url_source[1]=ido(url_source2,url_source3,increment,(parseFloat(url_source[4])-90.0));
+				//url_1の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
+			url_source[2]=keido(url_source2,url_source3,increment,(parseFloat(url_source[4])-90.0));
+				//url_1の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
 			$('#url_2').val(decodeURI(url_origin+url_pathname+"#"+url_source.join('/')));
 		break;
 		case 2:																				//right    　[右図URL入力時]
-			increment=+parallax_length*500;								//視点URL作成
-//			url_source[1]=ido(url_source2,url_source3,increment,(parseFloat(url_source[4])));		//url_2の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
-//			url_source[2]=keido(url_source2,url_source3,increment,(parseFloat(url_source[4])));	//url_2の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
-			url_source[1]=ido(url_source2,url_source3,increment,(parseFloat(url_source[4]))-90.0);		//url_2の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
-			url_source[2]=keido(url_source2,url_source3,increment,(parseFloat(url_source[4]))-90.0);	//url_2の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
+			increment=+parallax_length*500;							//視点URL作成
+			url_source[1]=ido(url_source2,url_source3,increment,(parseFloat(url_source[4]))-90.0);
+				//url_2の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
+			url_source[2]=keido(url_source2,url_source3,increment,(parseFloat(url_source[4]))-90.0);
+				//url_2の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
 			$('#url_0').val(decodeURI(url_origin+url_pathname+"#"+url_source.join('/')));
-			increment=+parallax_length*1000;							//左図視点作成
-//			url_source[1]=ido(url_source2,url_source3,increment,(parseFloat(url_source[4])));		//url_2の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
-//			url_source[2]=keido(url_source2,url_source3,increment,(parseFloat(url_source[4])));	//url_2の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
-			url_source[1]=ido(url_source2,url_source3,increment,(parseFloat(url_source[4]))-90.0);		//url_2の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
-			url_source[2]=keido(url_source2,url_source3,increment,(parseFloat(url_source[4]))-90.0);	//url_2の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
+			increment=+parallax_length*1000;						//左図視点作成
+			url_source[1]=ido(url_source2,url_source3,increment,(parseFloat(url_source[4]))-90.0);
+				//url_2の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の緯度（度）
+			url_source[2]=keido(url_source2,url_source3,increment,(parseFloat(url_source[4]))-90.0);
+				//url_2の緯度（度）,経度（度）から距離（ｍ）,方位（度）の地点の経度（度）
 			$('#url_1').val(decodeURI(url_origin+url_pathname+"#"+url_source.join('/')));
 		break;
 	}
@@ -659,7 +719,7 @@ function point_list() {
 			$('#point_indication').val("固視点表示");
 			$('#sub_point').css('display','none');
 			point_list_flag=1;
-		} else {																				//図中の固視点心位置を表示する場合
+		} else {													//図中の固視点心位置を表示する場合
 			$('#point_indication').val("固視点非表示");
 			$('#sub_point').css('display','inline');
 			point_list_flag=0;
@@ -679,7 +739,7 @@ function change_angle_unit() {
 function angles_vmp_rewrite(s12) {
 	var set_vmp;
 	set_vmp=$("#latitude").val()+" "+$("#longitude").val()+" "+$("#azimuth").val()+" "+s12;
-	dmsformat=0;																			//角度単位:(deg)
+	dmsformat=0;													//角度単位:(deg)
 	const accuracy = document.angle_units.calc_prec;
 	// 値(数値)を取得
 	const num = accuracy.selectedIndex;
@@ -691,7 +751,59 @@ function angles_vmp_rewrite(s12) {
 	const t_p2_result=t_p2_elements[0]+", "+t_p2_elements[1]+", "+t_p2_elements[2]+", "+t.s12;
 	$("#angles_vmp").html(t_p2_result);
 }
-//====================================================================================================
+function detail_set() {
+	if (detail_set_activity==1) {
+			$('#p_0_1').show();
+			$('#p_0_2').show();
+			$('#p_1').show();
+			$('#url_indication').show();
+			$('#point_indication').show();
+			$('#button_down').show();
+			$('#detail').val("詳細非設定");
+			detail_set_activity=0;
+			url_indication_flag=0;
+			point_list_flag=0;
+			url_text();
+			point_list();
+		} else {
+			$('#p_0_1').hide();
+			$('#p_0_2').hide();
+			$('#p_1').hide();
+			$('#url_indication').hide();
+			$('#point_indication').hide();
+			$('#button_down').hide();
+			$('#detail').val("詳細設定");
+			detail_set_activity=1;
+			url_indication_flag=0;
+			point_list_flag=0;
+			url_text();
+			point_list();
+	}
+//$('#p_0_4').show();
+}
+function check4Start(currentSrc){	//610行から呼び出されている　2024.12．27.14:32
+	loopCount = 1;
+	check4Loop(currentSrc);
+}
+async function check4Loop(currentSrc){
+	interval = document.getElementById("time_interval").value;
+	while (rewriteMethodText4Status = 1) {
+		await new Promise(resolve => sT_id=setTimeout(resolve, interval));
+		currentSrc=document.getElementById('iframe01').contentDocument.location.href;
+		if (currentSrc !== lastSrc){
+			iframes_redisplay01();
+			lastSrc=currentSrc;
+		}
+	}
+}
+function check4End(){
+	clearTimeout(sT_id);
+}
+//
+//======================================================
+//Published subroutines, which　referenced in this sprict
+//======================================================
+//
 /*
 Karney, Charles F. F. (2022-05-02): "Geodesic calculations for an ellipsoid done right" ver. 2.0.0., https://geographiclib.sourceforge.io/scripts/geod-calc.html の変数
 t.status;
@@ -719,24 +831,25 @@ The above copyright notice and this permission notice shall be included in all c
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.  IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE. 
 */
 function ido(lat1, lon1, s12, azi_add_90) {
-// 	const input=lat1+" "+lon1+" "+parseFloat(azi_add_90-90.0)+" "+s12;
-	const input=lon1+" "+lat1+" "+parseFloat(azi_add_90)+" "+s12;
-alert("717:  "+input);
+	const input=lat1+" "+lon1+" "+parseFloat(azi_add_90)+" "+s12;
 	const point=GeodesicDirect(input, dmsformat, prec);
 	const latlon=point.p2.split(' ');
 	return latlon[0];
 }
 function keido(lat1, lon1, s12, azi_add_90) {
-//	const input=lat1+" "+lon1+" "+parseFloat(azi_add_90-90.0)+" "+s12;
-	const input=lon1+" "+lat1+" "+parseFloat(azi_add_90)+" "+s12;
+	const input=lat1+" "+lon1+" "+parseFloat(azi_add_90)+" "+s12;
 	const point=GeodesicDirect(input, dmsformat, prec);
 	const latlon=point.p2.split(' ');
 	return latlon[1];
 }
 
+//======================================================
 //The following, quoted
 //reference
-//	Karney (2022):Geodesic calculations for an ellipsoid done right,     https://geographiclib.sourceforge.io/scripts/geod-calc.html (viewed on 2022.1.18.). 
+//	Karney (2022):Geodesic calculations for an ellipsoid done right,  
+//	 https://geographiclib.sourceforge.io/scripts/geod-calc.html
+//	 (viewed on 2022.1.18.). 
+
 //"use strict";
 var g = geodesic.Geodesic,
     geod = g.WGS84,
@@ -788,6 +901,7 @@ function formatpoint(lat, lon, azi, dmsformat, prec) {
             azi.toFixed(prec));
   }
 };
+
 function GeodesicInverse(input, dmsformat, prec) {
   "use strict";
   var result = {},
@@ -837,9 +951,7 @@ function GeodesicDirect(input, dmsformat, prec) {
     p1 = dms.DecodeLatLon(t[0], t[1]);
     azi1 = dms.DecodeAzimuth(t[2]);
     s12 = parseFloat(t[3]);
-    t = geod.Direct(p1.lat, p1.lon, azi1, s12,
-                    g.ALL |
-                    g.LONG_UNROLL);
+    t = geod.Direct(p1.lat, p1.lon, azi1, s12,g.ALL | g.LONG_UNROLL);
     result.status = "OK";
     result.p1 = formatpoint(t.lat1, t.lon1, t.azi1, dmsformat, prec);
     result.p2 = formatpoint(t.lat2, t.lon2, t.azi2, dmsformat, prec);
@@ -861,5 +973,3 @@ function GeodesicDirect(input, dmsformat, prec) {
   }
   return result;
 };
-//====================================================================================================
-
