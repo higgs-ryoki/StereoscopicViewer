@@ -1,4 +1,4 @@
-//	stereoscope.js										2019. 6.20. coded by K. RYOKI
+//	stereoscope_GitHub.js								2019. 6.20. coded by K. RYOKI
 //														2025. 2.16. improved
 //
 var sT_id;
