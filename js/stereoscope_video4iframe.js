@@ -74,7 +74,7 @@ var endTime_non_VR;
 var previous_type="video";
 var video_filename='BIPS';
 var iframe_filename;
-var vr_filename='kujira_自然史博物館20231104_480';
+var vr_filename='kujira_20231104_480';
 
 function tooltip_rewrite(tooltip_name) {
 	$('#file_span_id').text(basename(tooltip_name));
