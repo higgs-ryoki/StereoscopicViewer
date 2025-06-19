@@ -1,7 +1,9 @@
 # StreoscopicViewer
 Viewing tools for GIS Globe or videos of rotating objects in 3D
-- [StereoscopicViewer](https://higgs-ryoki.github.io/StereoscopicViewer/html/index4GitHub_withGoogleMaps.html)：https://higgs-ryoki.github.io/StereoscopicViewer/html/index4GitHub_withGoogleMaps.html
-- [StereoscopicVideo](https://higgs-ryoki.github.io/StereoscopicViewer/html/stereoscopic_video4iframe.html) ：https://higgs-ryoki.github.io/StereoscopicViewer/html/stereoscopic_video4iframe.html
+- [SVw: StereoscopicViewer, GIS Globe地理情報システムステレオビュアー ](https://higgs-ryoki.github.io/StereoscopicViewer/html/index4GitHub_withGoogleMaps.html)
+-     https://higgs-ryoki.github.io/StereoscopicViewer/html/index4GitHub_withGoogleMaps.html
+- [SVd: StereoscopicVide, 動画ファイル & YouTube映像ステレオビュアー](https://higgs-ryoki.github.io/StereoscopicViewer/html/stereoscopic_video4iframe.html)
+-     https://higgs-ryoki.github.io/StereoscopicViewer/html/stereoscopic_video4iframe.html
 ## 利用上の留意点
 利用上の留意点は次の通りです。[LICENSE](LICENSE)もあわせてご参照ください。
 
