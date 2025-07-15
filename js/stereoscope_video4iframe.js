@@ -76,6 +76,21 @@ var video_filename='BIPS';
 var iframe_filename;
 var vr_filename='kujira_20231104_480';
 
+
+// appended 20250715
+			const url = window.location.href;
+			const queryString = window.location.search;
+//			alert("18 url="+url);
+//			alert("20 queryString="+queryString);
+			if (queryString=='') {
+//					alert("queryString(?以下のパラメータ)はありません。");
+				} else {
+//					alert("queryString(?以下のパラメータ)は"+queryString+"です。");
+					youtuneNo2=queryString.replace("?", "");
+			}
+
+
+
 function tooltip_rewrite(tooltip_name) {
 	$('#file_span_id').text(basename(tooltip_name));
 }
