@@ -1,5 +1,6 @@
 /*	stereoscope_video4iframe.js      2022. 9. 6. coded by K. RYOKI
                                      2024. 7. 2. improved
+                                     2025. 9.13. improved
                (stereoscope_video.js 2022. 2. 8. coded by K. RYOKI)
 */
 
@@ -24,7 +25,7 @@ const vr_sound=$('#checkbox4').get(0);
 const checkbox4_title=$('#checkbox4_title').get(0);;
 const speed_number=$('#speed_number').get(0);
 const speed_range=$('#speed_range').get(0);
-const startTime=$('#start_time').get(0);//$('#start_time')
+const startTime=$('#start_time').get(0);
 const endTime=$('#end_time').get(0);
 const sampledropArea=$('#sampleDropA').get(0);
 const textURI=$('#text_uri').get(0);
@@ -48,6 +49,7 @@ const input_rotate=$('#input_rotate').get(0);
 var blobUrl;
 var iframe_street;
 var movie_time;
+var stop_time;
 var url_Specified=default_dir;
 var YouTube_iframe;
 var ytID;
@@ -76,28 +78,16 @@ var video_filename='BIPS';
 var iframe_filename;
 var vr_filename='kujira_20231104_480';
 
-
 // appended 20250715
-			const url = window.location.href;
-			const queryString = window.location.search;
-//			alert("18 url="+url);
-//			alert("20 queryString="+queryString);
-			if (queryString=='') {
-//					alert("queryString(?以下のパラメータ)はありません。");
-				} else {
-//					alert("queryString(?以下のパラメータ)は"+queryString+"です。");
-					youtuneNo2=queryString.replace("?", "");
-			}
-
-
-
+	const url = window.location.href;
+	const queryString = window.location.search;
+	if (queryString=='') {
+		} else {
+			youtuneNo2=queryString.replace("?", "");
+	}
 function tooltip_rewrite(tooltip_name) {
 	$('#file_span_id').text(basename(tooltip_name));
 }
-//function span_text_rewrite(file_name) {
-//	$('#file_span_id').text(basename(file_name));
-//	video_show();
-//}
 //HTMLフォーム読込後実行
 jQuery(function ($) {
 	var select_file;
@@ -108,98 +98,123 @@ jQuery(function ($) {
 	var st=$('#start_time').get(0);
 	$('#damy_margin1').toggle();
 	$('#damy_margin2').toggle();
-	$('#file_span_id').text("<b>ボタン2を押しました</b>");//ok
 	startTime.visibility='visible';
 	endTime.visibility='visible';
 	input_rotate.visibility='visible';
 	init_speed();
 	video_set_leave();
-	// URLアンカー（#（?も可）以後，映像ファイル名）取得
+	// URLアンカー（#以後，映像ファイル名）取得
 	urlHash=location.hash.slice(1) ;
+//alert("107 location.hash, urlHash = "+location.hash+", "+urlHash);
+if (urlHash==!""){
+//alert("109 urlHash = "+urlHash);
 	video_speed=speed_range.value;
-	if(urlHash){							// アンカーあり
-			video1.src=urlHash;
-			video2.src=urlHash;
-			vr1_a_scene.src=urlHash;
-			vr2_a_scene.src=urlHash;
-			var uri_this=urlHash;
-		} else {							// アンカーなし
-			video1.src=default_source;
-			video2.src=default_source;
-			vr1_a_scene.src=default_vrsource;
-			vr2_a_scene.src=default_vrsource;
-			var uri_this=default_source;
+} else{
+}
+//2025.9.7. append
+var thisURL;
+// URL取得
+thisURL=new URL(window.location.href);
+
+// URLのsearchParamsオブジェクト作成
+var urlParams=thisURL.searchParams;
+
+// getメソッドで表示用ファイル(またはURL)を取得
+var iframe_src;
+//iframe_src=urlParams.get('file');
+iframe_src=thisURL.searchParams.get("file");
+//alert("125 iframe_src = "+iframe_src);
+if (iframe_src!=null){
+		document.getElementById('text_uri').value = iframe_src;
+$('#file_span_id').text(basename(tooltip_file));
+		outer_uri1();
+	} else {
+		if(urlHash){							// URL hash (#) あり
+//alert("131 URL hash (#) あり");
+				video1.src=urlHash;
+				video2.src=urlHash;
+				vr1_a_scene.src=urlHash;
+				vr2_a_scene.src=urlHash;
+				var uri_this=urlHash;
+			} else {							// URL hash (#) なし
+//alert("138 URL hash (#) なし");
+				video1.src=default_source;
+				video2.src=default_source;
+				vr1_a_scene.src=default_vrsource;
+				vr2_a_scene.src=default_vrsource;
+				var uri_this=default_source;
+		}
+		uri_basement=basename(uri_this);
+		tooltip_file=decodeURI(video1.src);
+		select_file=decodeURI(basename(video1.src));
+		$('#file_span_id').text(basename(tooltip_file));
+		tooltip_rewrite(tooltip_file);
+		//ファイル読込
+		$('#filename').change(function() {
+			const fileList=this.files ;
+			blobUrl=window.URL.createObjectURL( fileList[0] ) ;
+			video_to_show(blobUrl);
+			init_speed();
+		});
+		//再生開始・停止時刻初期設定
+		$('#video1').on('loadedmetadata',function() {
+			startTime.value=0;
+			endTime.value=video1.duration;
+			movie_time=endTime.value;
+			check_loop();
+		});
+		//速さ調整
+		$('#speed_range').change(function() {
+			if (yt_sw==0) {
+					video_speed=speed_range.value;
+					speed_number.value=video_speed;
+					video1.playbackRate=video_speed;
+					video2.playbackRate=video_speed;
+				} else {
+					video_speed=speed_range.value;
+					speed_number.value=video_speed;
+			}
+		});
+		// テキストボックスフォーカス時
+		$('#text_uri').focusin(function(e) {
+			$('#text_uri').val("");
+		});
+		drag_and_drop_event(file_drop_area);
+		if (param_url !== '') {
+			url_Specified=param_url;
+			outer_uri();
+		}
+		display_type="video";
+		display_choise(display_type);
+		//videoの再生終了時に繰り返すとき
+		video1.addEventListener('ended', (event) => {
+			if (loops.checked==true) {
+				video1.currentTime=startTime.value;
+				video2.currentTime=startTime.value;
+				start();
+			}
+		})
+		//iframeの再生終了時に繰り返すとき
+		/*
+			video1.addEventListener("timeupdate", function(){
+				cTime = video1.currentTime;//現在のvideo再生位置
+				if( endTime.value <= cTime) {//もしも再生停止位置以上になったら
+					video1.pause();// 再生停止
+					video2.pause();
+					video1.currentTime = startTime.value;//再生開始位置セット
+					video2.currentTime = startTime.value;
+					setTimeout(function(){
+						video1.play();
+					},1000);//再生実行
+					setTimeout(function(){
+						video2.play();
+					},1000);
+				}
+			})
+		*/
 	}
-	uri_basement=basename(uri_this);
-	tooltip_file=decodeURI(video1.src);
-	select_file=decodeURI(basename(video1.src));
-//	$('#file_span_id').text(tooltip_file));
-	$('#file_span_id').text(basename(tooltip_file));
-	tooltip_rewrite(tooltip_file);
-//	span_text_rewrite(select_file);
-	//ファイル読込
-	$('#filename').change(function() {
-		const fileList=this.files ;
-		blobUrl=window.URL.createObjectURL( fileList[0] ) ;
-		video_to_show(blobUrl);
-		init_speed();
-	});
-	//再生開始・停止時刻初期設定
-	$('#video1').on('loadedmetadata',function() {
-		startTime.value=0;
-		endTime.value=video1.duration;
-		movie_time=endTime.value;
-		check_loop();
-	});
-	//速さ調整
-	$('#speed_range').change(function() {
-		if (yt_sw==0) {
-				video_speed=speed_range.value;
-				speed_number.value=video_speed;
-				video1.playbackRate=video_speed;
-				video2.playbackRate=video_speed;
-			} else {
-				video_speed=speed_range.value;
-				speed_number.value=video_speed;
-		}
-	});
-	// テキストボックスフォーカス時
-	$('#text_uri').focusin(function(e) {
-		$('#text_uri').val("");
-	});
-	drag_and_drop_event(file_drop_area);
-	if (param_url !== '') {
-		url_Specified=param_url;
-		outer_uri();
-	}
-  display_type="video";
-  display_choise(display_type);
-	//videoの再生終了時に繰り返すとき
-	video1.addEventListener('ended', (event) => {
-		if (loops.checked==true) {
-			video1.currentTime=startTime.value;
-			video2.currentTime=startTime.value;
-			start();
-		}
-	})
-	//iframeの再生終了時に繰り返すとき
-/*
-	video1.addEventListener("timeupdate", function(){
-		cTime = video1.currentTime;//現在のvideo再生位置
-		if( endTime.value <= cTime) {//もしも再生停止位置以上になったら
-			video1.pause();// 再生停止
-			video2.pause();
-			video1.currentTime = startTime.value;//再生開始位置セット
-			video2.currentTime = startTime.value;
-			setTimeout(function(){
-				video1.play();
-			},1000);//再生実行
-			setTimeout(function(){
-				video2.play();
-			},1000);
-		}
-	})
-*/
+//-----------------------------------------------------------add 20251008
+//	window.addEventListener("load", setCurTime(), false);
 })
 //videoフレームの回転
 function rotation() {
@@ -269,27 +284,29 @@ function set_start() {
 		startTime.value=0;
 	}
 	preset_startTime(startTime.value);
-	if (yt_sw==1) {
-		player1.cueVideoById({
-			videoId:ytID,
-			playlist: ytID, // 再生する動画のリスト
-			startSeconds: startTime.value,
-			endSeconds: endTime.value
-		});
-		player2.cueVideoById({
-			videoId:ytID,
-			playlist: ytID, // 再生する動画のリスト
-			startSeconds: startTime.value,
-			endSeconds: endTime.value
-		});
-		if (startTime.value=="") {
-			startTime.value=0;
-			startYT=startTime.value;
-		}
-		if (endTime.value!==player1.getDuration()) {
-			endTime.value=player1.getDuration();
-			endYT=endTime.value;
-		}
+	if (yt_sw==0) {																	//iframe以外
+		} else {																	//YouTube
+			player1.cueVideoById({
+				videoId:ytID,
+				playlist: ytID, // 再生する動画のリスト
+				startSeconds: startTime.value,
+				endSeconds: endTime.value
+			});
+			player2.cueVideoById({
+				videoId:ytID,
+				playlist: ytID, // 再生する動画のリスト
+				startSeconds: startTime.value,
+				endSeconds: endTime.value
+			});
+			if (startTime.value=="") {
+				startTime.value=0;
+				startYT=startTime.value;
+			}
+/*			if (endTime.value!==player1.getDuration()) {
+				endTime.value=player1.getDuration();
+				endYT=endTime.value;
+			}
+*/
 	}
 }
 //再生終了時刻設定
@@ -300,30 +317,44 @@ preset_endTime(endTime.value);
 			video1.pause();														//再生停止
 			video2.pause();
 			if (endTime.value=="") {
+/*
+			if (endTime.value=="" || video1.duration!==NaN) {
+alert("320 video1.duration = "+video1.duration);
+*/
 				endTime.value=video1.duration;
 			}
-		} else {																			//YouTube
+		} else {																	//YouTube
 			endYT=endTime.value;
+//alert("322 endYT = "+endYT);
 			player1.cueVideoById({
 				videoId:ytID,
 				playlist: ytID,													//再生する動画のリスト
 				startSeconds: startTime.value,
-				endSeconds: endTime.value
+//				endSeconds: endTime.value
+				endSeconds: endYT
 			});
+//alert("330 endYT = "+endYT);
 			player2.cueVideoById({
 				videoId:ytID,
 				playlist: ytID,													//再生する動画のリスト
 				startSeconds: startTime.value,
-				endSeconds: endTime.value
+//				endSeconds: endTime.value
+				endSeconds: endYT
 			});
+			
+//endTime.value=endYT;
+//alert("341 endYT = "+endYT);
+endTime.value=endYT;
 	}
 }
 //再生開始
 function start() {
 	if (yt_sw==0) {																	//iframe以外
 			if (vr_select.checked==false){						//通常のvideo
+
 					video1.currentTime=startTime.value;	//再生開始位置セット
 					video2.currentTime=startTime.value;
+/*
 					setTimeout(
 						function(){
 							video1.play();
@@ -335,39 +366,51 @@ function start() {
 						},100
 					);
 					timeup();
-				} else {																//VR動画
+*/
+//							video1.play();
+							video2.play();
+
+//        startTime = document.getElementById("start_time").value;
+        video1.currentTime = startTime.value;
+        video2.currentTime = startTime.value;
+        video1.play();
+        video2.play();
+				} else {															//VR動画
 					vr1.currentTime=startTime.value;	//再生開始位置セット
 					vr2.currentTime=startTime.value;
 					vr1.play();
 					vr2.play();
 			}
-		} else {																			//YouTubeの場合
-			playbutton();																//YouTube再生開始
+		} else {																	//YouTubeの場合
+			playbutton();														//YouTube再生開始
 	}
 }
 //動画ファイル再生
 function timeup() {
 	if (yt_sw==0) {																	//iframe以外
 		if (vr_select.checked==false){						//通常のvideo
-				var presentTime=video1.currentTime;				//動画ファイル再生位置
+/*
+*/				var presentTime=video1.currentTime;				//動画ファイル再生位置
 				if( parseFloat(presentTime)<=parseFloat(endTime.value)) {		//再生停止位置以上なら
-					video1.pause(); 												//再生停止
+					video1.pause(); 										//再生停止
 					video2.pause();
-					video1.currentTime=startTime.value;			//再生開始位置セット
+					video1.currentTime=startTime.value;						//再生開始位置セット
 					video2.currentTime=startTime.value;
 					if(loops.checked==true){
 						setTimeout(function(){
 							video1.play();
-						},100);															//動画ファイル再生開始
+						},100);													//動画ファイル再生開始
 						setTimeout(function(){
 							video2.play();
 						},100);
 					}
 				}
+/*
+*/
 			} else {																//VR動画
 				var presentTime=vr1.currentTime;				//動画ファイル再生位置
 				if( parseFloat(presentTime)<=parseFloat(endTime.value)) {		//再生停止位置以上なら
-					vr1.pause(); 												//再生停止
+					vr1.pause(); 								//再生停止
 					vr2.pause();
 					vr1.currentTime=startTime.value;			//再生開始位置セット
 					vr2.currentTime=startTime.value;
@@ -396,16 +439,17 @@ function replay(set_replay) {
 							video1.currentTime=repeat_start_time;	//引数なし
 							video2.currentTime=repeat_start_time;
 						} else {
-							video1.currentTime=set_replay;				//引数あり
+							video1.currentTime=set_replay;			//引数あり
 							video2.currentTime=set_replay;
 					}
-					setTimeout(function(){
+					setTimeout(function(){						//再生
 						video1.play();
-					},100);																	//再生
+					},100);
 					setTimeout(function(){
 						video2.play();
 					},100);
-				} else {																//VR動画
+setCurTime();
+				} else {										//VR動画
 					vr1.currentTime=repeat_start_time;	//再生開始位置セット
 					vr2.currentTime=repeat_start_time;
 					vr1.play();
@@ -422,9 +466,9 @@ function replay(set_replay) {
 }
 //再生停止
 function stop() {
-	if (yt_sw==0) {																	//iframe以外
-			if (vr_select.checked==false){						//通常のvideo
-					video1.pause();												//動画ファイルの中断
+	if (yt_sw==0) {																			//iframe以外
+			if (vr_select.checked==false){												//通常のvideo
+					video1.pause();													//動画ファイルの中断
 					video2.pause();
 					repeat_start_time=video1.currentTime;
 				} else {																//VR動画
@@ -433,14 +477,14 @@ function stop() {
 					repeat_start_time=vr1.currentTime;
 			}
 		} else {																			//YouTube
-			pausebutton();													//YouTubeの中断
+			pausebutton();															//YouTubeの中断
 	}
 }
 //全再生停止
 function all_stop() {
-	video1.pause();												//動画ファイルの中断
+	video1.pause();																	//動画ファイルの中断
 	video2.pause();
-	vr1.pause();													//VRファイルの中断
+	vr1.pause();																//VRファイルの中断
 	vr2.pause();
 	player1.pauseVideo();														//YouTubeの中断
 	player2.pauseVideo();
@@ -448,24 +492,24 @@ function all_stop() {
 //左図で操作
 function check_start() {
 	if (yt_sw==0) {																	//iframe以外
-			if (vr_select.checked==false){						//通常のvideo
+			if (vr_select.checked==false){										//通常のvideo
 					video1.pause();													//再生停止
 					video2.pause();
 					if (left_active.checked == true) {
 							left_op=1;
-							video1.currentTime=startTime.value;	//再生開始位置セット
+							video1.currentTime=startTime.value;				//再生開始位置セット
 							video2.currentTime=startTime.value;
 						} else {
 							left_op=0;
 							$('#video1').attr('loop',false);
 							$('#video2').attr('loop',false);
 					}
-				} else {																//VR動画
+				} else {															//VR動画
 					vr1.pause();														//再生停止
 					vr2.pause();
 					if (left_active.checked == true) {
 							left_op=1;
-							vr1.currentTime=startTime.value;	//再生開始位置セット
+							vr1.currentTime=startTime.value;							//再生開始位置セット
 							vr2.currentTime=startTime.value;
 						} else {
 							left_op=0;
@@ -475,7 +519,7 @@ function check_start() {
 							vr2.loop=false;
 					}
 			}
-		} else {																			//YouTube
+		} else {																	//YouTube
 			pausebutton();
 			if (left_active.checked == true) {
 					left_op=1;
@@ -488,30 +532,30 @@ function check_start() {
 //loop表示
 function check_loop(){
 	if (yt_sw==0) {																	//iframe以外
-			if (vr_select.checked==false){						//通常のvideo
-					video1.pause();														//再生停止
+			if (vr_select.checked==false){										//通常のvideo
+					video1.pause();													//再生停止
 					video2.pause();
-					if (loops.checked == true) {					//loopさせるとき
-							video1.currentTime=startTime.value;		//再生開始位置セット
+					if (loops.checked == true) {							//loopさせるとき
+							video1.currentTime=startTime.value;					//再生開始位置セット
 							video2.currentTime=startTime.value;
 							$('#video1').attr('loop',true);
 							$('#video2').attr('loop',true);
-						} else {														//loopさせないとき
+						} else {											//loopさせないとき
 							$('#video1').attr('loop',false);
 							$('#video2').attr('loop',false);
 					}
 //					start();
 				} else {
-					vr1.pause();														//再生停止
+					vr1.pause();												//再生停止
 					vr2.pause();
-					if (loops.checked == true) {
-							vr1.currentTime=startTime.value;		//再生開始位置セット
+					if (loops.checked == true) {								//loopさせるとき
+							vr1.currentTime=startTime.value;				//再生開始位置セット
 							vr2.currentTime=startTime.value;
 //							$('#video_A_Frame01').attr('loop',true);
 //							$('#video_A_Frame02').attr('loop',true);
 							vr1.loop=true;
 							vr2.loop=true;
-						} else {														//loopさせないとき
+						} else {												//loopさせないとき
 //							$('#video_A_Frame01').attr('loop',false);
 //							$('#video_A_Frame02').attr('loop',false);
 							vr1.loop=false;
@@ -519,12 +563,12 @@ function check_loop(){
 					}
 			}
 		} else {																	//YouTube
-					if (loops.checked == true) {					//loopさせるとき
-							iframe1.currentTime=startTime.value;	//再生開始位置セット
+					if (loops.checked == true) {								//loopさせるとき
+							iframe1.currentTime=startTime.value;			//再生開始位置セット
 							iframe2.currentTime=startTime.value;
 							$('#iframeID1').attr('loop',true);
 							$('#iframeID2').attr('loop',true);
-						} else {														//loopさせないとき
+						} else {												//loopさせないとき
 							$('#iframeID1').attr('loop',false);
 							$('#iframeID2').attr('loop',false);
 					}
@@ -579,13 +623,13 @@ function video_to_show(blobUrl){
 			$('#video_A_Frame01').attr('src',blobUrl);
 			$('#video_A_Frame02').attr('src',blobUrl);
 	}
-	var select_file=$('#filename').prop('files')[0].name;
+//	var select_file=$('#filename').prop('files')[0].name;
+	select_file=$('#filename').prop('files')[0].name;
 	var tooltip_file2=document.getElementById('filename').value;
 	if(tooltip_file2.indexOf("C:\\fakepath\\" || "C:/fakepath/")>-1){
 		var tooltip_file3=tooltip_file2.replace(("C:\\fakepath\\" || "C:/fakepath/"),"");
 	};
 	tooltip_rewrite(tooltip_file3);
-//	span_text_rewrite(select_file);
 	if (vr_select.checked==false){
 			video_fileneme=tooltip_file3;
 		} else {
@@ -598,13 +642,13 @@ function iframe_to_show(blobUrl){
 	display_choise(display_type);
 	$('#iframeId1').attr('src',blobUrl);
 	$('#iframeId2').attr('src',blobUrl);
-	var select_file=file_input.prop('files')[0].name;
+//	var select_file=file_input.prop('files')[0].name;
+	select_file=file_input.prop('files')[0].name;
 	var tooltip_file2=file_input.value;
 	if(tooltip_file2.indexOf("C:\\fakepath\\" || "C:/fakepath/")>-1) {
 		var tooltip_file3=tooltip_file2.replace(("C:\\fakepath\\" || "C:/fakepath/"),"");
 	}
 	tooltip_rewrite(tooltip_file3);
-//	span_text_rewrite(select_file);
 	iframe_fileneme=tooltip_file3;
 	init_speed();
 }
@@ -613,18 +657,22 @@ function basename(path) {
 	var filename=path.split("/" || "\\").reverse()[0].split('.')[0];		//名前
 	var extend=path.split("/" || "\\").reverse()[0].split('.')[1];			//拡張子
 	var ret;
-	if (extend="undefined"){
+
+	if (extend==""){
 			ret=filename;
 		} else{
 			ret=filename+"."+extend;
 	}
+
 	return ret;
 }
-//映像ファイル名入力
+//映像ファイル名入力(TextBox)
 function outer_uri1() {
 	url_Specified=textURI.value;
 	outer_uri();
+//start();
 }
+//映像ファイル選択(Button>>選択画面)
 function outer_uri2() {
 	vr_sound.checked=false;
 	url_Specified=file_input.value;
@@ -632,46 +680,45 @@ function outer_uri2() {
 }
 //映像ファイル名orYouTubeURL作成
 function outer_uri() {
-all_stop();
 	var url_Specified_array;
 	var yt_num;
 	var iframe_streerView='src="https:\/\/www.google.com\/maps\/embed';
 	startTime.value="";
 	endTime.value="";
-	if (param_url !=="" && url_Specified=="") {
-		url_Specified=param_url;
-	}
-	if ((url_Specified.endsWith('.mp4') || url_Specified.endsWith('.mov')|| url_Specified.endsWith('.webm') || url_Specified.endsWith('.ogv')|| url_Specified.endsWith('.html'))==true){	//mp4, mov, webm, ogvの場合
+//alert("649 url_Specified = "+url_Specified);
+	if ((url_Specified.endsWith('.mp4') || url_Specified.endsWith('.mov')|| url_Specified.endsWith('.webm') || url_Specified.endsWith('.ogv')|| url_Specified.endsWith('.html'))==true)
+		{																//mp4, mov, webm, ogvの場合
 			if (vr_select.checked==true){
 					display_type="vr";
 					display_choise(display_type);
 					vr_filename=basename(url_Specified);
-$('#file_span_id').text(vr_filename);
+					$('#file_span_id').text(vr_filename);
 					input_enabled();
 					startTime.value=0;
 					street_remove();		//google street 削除
 					yt_sw=0;
 					drag_and_drop_event(file_drop_area);
 					init_speed();
-//					display_type="vr";
-//					display_choise(display_type);
-//					$('#file_span_id').text(url_Specified);
 					$('#file_span_id').text(vr_filename);
 					const basen =  url_Specified.split('/').pop().split('.').shift();
 					if (vr_sound.checked==true){
 						check_vr_sound();
 					}
-//
-//					display_type="video";
-//					display_choise(display_type);
-//					display_type="vr";
-//					display_choise(display_type);
 				} else {
 					input_rotate.visibility='visible';
 					display_type="video";
 					display_choise(display_type);
 					video_filename=basename(url_Specified);
-$('#file_span_id').text(video_filename);
+//alert("673 basename(url_Specified) = "+basename(url_Specified));
+//alert("673 url_Specified = "+url_Specified);
+//alert("674 url_Specified = "$('#file_span_id').text($('#file_span_id')[0].files[0].name));
+//$('#file_span_id').text(basename(url_Specified));//$('#file_span_id').text(video_filename.pathname.split('/')[video_filename.pathname.split('/').length-1]);
+//$('#file_span_id').text(basename(url_Specified));//$('#file_span_id').text(video_filename.pathname.split('/')[video_filename.pathname.split('/').length-1]);
+//$('#file_span_id').text(video_filename.location.pathname.split('/')[video_filename.location.pathname.split('/').length-1]);
+//location.pathname;　// パス部分だけ取得
+//var paths = location.pathname.split('/');　// スラッシュで分解して配列にする
+//var file = location.pathname.split('/')[location.pathname.split('/').length-1]; // 最後の要素を取得する
+
 					input_enabled();
 					startTime.value=0;
 					street_remove();		//google street 削除
@@ -685,7 +732,7 @@ $('#file_span_id').text(video_filename);
 			display_type="iframe";
 			display_choise(display_type);
 			iframe_filename=basename(url_Specified);
-$('#file_span_id').text(iframe_filename);
+			$('#file_span_id').text(iframe_filename);
 			if (url_Specified.startsWith('<iframe')==true) {			//<iframe>型の場合
 					display_type="iframe";
 					display_choise(display_type);
@@ -706,7 +753,7 @@ $('#file_span_id').text(iframe_filename);
 							ytID0=url_Specified.replace('https:\/\/www.youtube.com\/embed\/','');
 							ytID0=ytID0.replace('https:\/\/www.youtube.com\/watch?t=','');
 							ytID=ytID0;
-							url_Specified=url_Specified.replace('https://www.youtube.com/embed/','');
+							url_Specified=url_Specified.replace('https:\/\/www.youtube.com\/embed\/','');
 							$('#file_span_id').text(basename(url_Specified));
 							startTime.value=0;
 							yt_set();
@@ -714,16 +761,14 @@ $('#file_span_id').text(iframe_filename);
 					startTime.value=0;
 				} else {
 					yt_sw=1;
-//					video_hide();vr_hide();
 					display_type="iframe";
-					display_choise(display_type);
 					street_remove();							//google street 削除
 					input_enabled();
 					startTime.value=0;
 					iframe_show();
 					input_rotate.visibility='visible';
-					if (url_Specified.startsWith('https://youtu.be/')==true){	//URL https://youtu.be/型の場合
-							ytID0=url_Specified.replace('https://youtu.be/','');
+					if (url_Specified.startsWith('https:\/\/youtu.be\/')==true){	//URL https://youtu.be/型の場合
+							ytID0=url_Specified.replace('https:\/\/youtu.be\/','');
 							if (ytID0.indexOf('?')==-1 ) {		//動画のURLの場合
 									ytID=ytID0;
 									startYT=0;
@@ -733,9 +778,11 @@ $('#file_span_id').text(iframe_filename);
 									startYT=ytID0.replace(ytID+'?t=','');
 							}
 						} else {												//URL www.youtube.com型
+							ytID0=url_Specified;
 							ytID0=url_Specified.replace('https:\/\/www.youtube.com\/embed\/','');
-							ytID0=url_Specified.replace('https:\/\/www.youtube.com\/shorts\/','');
+							ytID0=ytID0.replace('https:\/\/www.youtube.com\/shorts\/','');
 							ytID0=ytID0.replace('?feature=share','');
+							ytID0=ytID0.replace('https:\/\/www.youtube.com\/watch?v=','');
 							ytID=ytID0.replace('https:\/\/www.youtube.com\/watch?v=','');
 							if (ytID.indexOf('&')!==-1) {
 								ytID=ytID.substring(0, ytID.indexOf('&'));
@@ -746,8 +793,8 @@ $('#file_span_id').text(iframe_filename);
 							ytID0=ytID0.replace(ytID,'');
 							ytID0=ytID0.replace('&feature=share','');
 							ytID0=ytID0.replace('?t=','');
-					}
 					$('#file_span_id').text(basename(url_Specified).replace('watch?v=',''));
+					}
 					startTime.value=0;
 					yt_set();
 			}
@@ -786,7 +833,7 @@ function yt_set() {
 	}
 	movie_time=player1.getDuration();
 	startTime.value=startYT;
-	if (endTime.value=""){
+	if (endTime.value==""){
 		endTime.value=movie_time;
 	}
 	drag_and_drop_event(iframe1_area);
@@ -839,10 +886,11 @@ function check_menu(){
 }
 //再生継続時間
 function playback_duration(){
- 	if (yt_sw==0) {
+ //alert("866 endTime.value = "+endTime.value);
+	if (yt_sw==0) {
 			var videoElem = document.getElementById('video1');
 			videoElem.addEventListener('loadedmetadata', function() {
-				endTime.value=videoElem.duration;
+//				endTime.value=videoElem.duration;
 				movie_time=endTime.value;
 			})
 		} else {
@@ -865,7 +913,9 @@ function preset_startTime(preset_start) {
 }
 //再生終了時刻セット
 function preset_endTime(preset_end) {
+//alert("892 preset_end, endTime.value = "+preset_end+", "+endTime.value);
 	if (parseFloat(endTime.value)>=parseFloat(preset_end)){
+//alert("892 preset_end = "+preset_end);
 		endTime.value=parseFloat(preset_end);
 	}
 	if (parseFloat(endTime.value)<parseFloat(startTime.value)){
@@ -954,9 +1004,9 @@ function video_hide() {
 }
 //vr非表示
 function vr_hide() {
-document.getElementById("a-scene1").style.display='none';
-document.getElementById("a-scene2").style.display='none';
-document.getElementById("speed_range").disabled = false;
+	document.getElementById("a-scene1").style.display='none';
+	document.getElementById("a-scene2").style.display='none';
+	document.getElementById("speed_range").disabled = false;
 }
 //google street削除
 function street_remove() {
@@ -1042,7 +1092,7 @@ all_stop();
 			input_width_title.color="gray";
 			input_height.disabled=true;
 			input_height_title.color="gray";
-$('#file_span_id').text(vr_filename.replace("C:\\fakepath\\",""));
+			$('#file_span_id').text(vr_filename.replace("C:\\fakepath\\",""));
 		} else {
 			display_type=previous_type;
 			endTime.value=endTime_non_VR;
@@ -1052,20 +1102,16 @@ $('#file_span_id').text(vr_filename.replace("C:\\fakepath\\",""));
 			input_width_title.color="black";
 			input_height.disabled=false;
 			input_height_title.color="black";
-//			if ((url_Specified.endsWith('.mp4') || url_Specified.endsWith('.mov')|| url_Specified.endsWith('.webm') || url_Specified.endsWith('.ogv')|| url_Specified.endsWith('.html'))==true){		//mp4, mov, webm, ogvの場合
-//					display_type="video";
 					if (display_type=="video"){			//videoの場合
 							yt_sw=0;
-$('#file_span_id').text(video_filename.replace("C:\\fakepath\\",""));
+							$('#file_span_id').text(video_filename.replace("C:\\fakepath\\",""));
 						} else {											//iframeの場合
 							display_type="iframe";
 							yt_sw=1;
-$('#file_span_id').text(iframe_filename.replace("watch?v=",""));
+							$('#file_span_id').text(iframe_filename.replace("watch?v=",""));
 					}
-//			}
 	}
 	display_choise(display_type);
-//	stop();
 }
 //VR動画音声の出力
 function check_vr_sound(){
@@ -1121,4 +1167,75 @@ function display_choise(disp_type) {
 	}
 stop();
 }
+//-----------------------------------------------------------add 20251008
+function setCurTime() {
+//		video1.play();
+//		video2.play();
+//		repeat_start_time = 5; //再生開始位置
+//		stopTime = 15; //再生停止位置
+//		startTime = document.getElementById("start_time").value; //再生開始位置
+	if (yt_sw==0) {																	//iframe以外
+		repeat_start_time = document.getElementById("start_time").value; //再生開始位置
+		stop_time  = document.getElementById("end_time").value;   //再生停止位置
+		video1.addEventListener("timeupdate", function(){
+			currentTime = this.currentTime; //再生位置
+			if( stop_time <= currentTime) { //もしも再生停止位置以上になったら
+				video1.pause(); // いったん再生を止めて
+				video2.pause();
+				video1.currentTime = repeat_start_time; //再生開始位置をセットしてから
+				video2.currentTime = repeat_start_time;
+				video1.play(); //再生する
+				video2.play();
+			}
+		});
+	} else {																	//YouTube
+//再生開始時刻設定
+			player1.cueVideoById({
+				videoId:ytID,
+				playlist: ytID, // 再生する動画のリスト
+				startSeconds: startTime.value,
+				endSeconds: endTime.value
+			});
+			player2.cueVideoById({
+				videoId:ytID,
+				playlist: ytID, // 再生する動画のリスト
+				startSeconds: startTime.value,
+				endSeconds: endTime.value
+			});
+			if (startTime.value=="") {
+				startTime.value=0;
+				startYT=startTime.value;
+			}
+/*			if (endTime.value!==player1.getDuration()) {
+				endTime.value=player1.getDuration();
+				endYT=endTime.value;
+			}
+*/
 
+//再生終了時刻設定
+	stop();
+preset_endTime(endTime.value);
+			endYT=endTime.value;
+//alert("322 endYT = "+endYT);
+			player1.cueVideoById({
+				videoId:ytID,
+				playlist: ytID,													//再生する動画のリスト
+				startSeconds: startTime.value,
+//				endSeconds: endTime.value
+				endSeconds: endYT
+			});
+//alert("330 endYT = "+endYT);
+			player2.cueVideoById({
+				videoId:ytID,
+				playlist: ytID,													//再生する動画のリスト
+				startSeconds: startTime.value,
+//				endSeconds: endTime.value
+				endSeconds: endYT
+			});
+			
+//endTime.value=endYT;
+//alert("341 endYT = "+endYT);
+endTime.value=endYT;
+
+	}
+}

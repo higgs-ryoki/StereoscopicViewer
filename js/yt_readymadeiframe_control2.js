@@ -63,9 +63,11 @@ function onYouTubeIframeAPIReady() {
 }
 // 動画の操作
 function pausebutton() {
-	ytcurrentTime=player1.getCurrentTime();
-	player1.pauseVideo();
-	player2.pauseVideo();
+	if (yt_sw==1) {
+		ytcurrentTime=player1.getCurrentTime();
+		player1.pauseVideo();
+		player2.pauseVideo();
+	}
 }
 function playbutton() {
 	if (yt_sw==1) {
@@ -133,7 +135,7 @@ function onPlayerStateChange1(event) {
 		}
 	}
 	if (ytStatus==YT.PlayerState.CUED) {
-		endTime.value=player1.getDuration();
+//		endTime.value=player1.getDuration();
 	}
 	if (endTime.value=="") {
 		endTime.value=player1.getDuration();
