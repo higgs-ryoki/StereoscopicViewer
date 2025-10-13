@@ -5,6 +5,7 @@
 								2022. 2. 8. coded by K. RYOKI
 								2023.10. 3. improved
 								2024. 7. 2. improved
+								2025.10.13. improved
 (Reference)
 	A-FrameでVRコントローラーを使う, Chapter 09, かじるプログラミング, 
 	https://zenn.dev/sdkfz181tiger/books/671f43a6883d34/viewer/7ae759
@@ -46,10 +47,20 @@
 					<span class="video_parameter" class="string" id="input_rotate_title" style="z-index:100" >傾斜(deg)</span>	&thinsp;
 					<input type="number" class="video_parameter" class="number" id="input_rotate" name="tentacles" min="-180" max="180" value="0" onchange="rotation();"></input>&emsp;
 					<span class="video_parameter" class="string" style="z-index:100" style="visibility:visible">再生範囲(s)</span>
+<!--
 					<input type="number" class="video_parameter" class="number" id="start_time" name="start_t" onchange="set_start();">
 						<span id="end_time_title" >~</span>
 					</input>
 					<input type="number" class="video_parameter" class="number" id="end_time" name="end_t"  onchange="set_end();"></input>&emsp;
+-->
+<input type="number" class="video_parameter" class="number" id="start_time" name="start_t" onchange="setCurTime();">
+<span id="end_time_title" >~</span>
+</input>
+<input type="number" class="video_parameter" class="number" id="end_time" name="end_t"  onchange="setCurTime();"></input>&emsp;
+<!--
+<input type="text" id="start_time" onchange="setCurTime()" size="3" placeholder="秒" value="0">
+~<input type="text" id="end_time" onchange="setCurTime()" size="3" placeholder="秒" value="3">
+-->
 					<input type="button" class="video_parameter" class="button" id="button_play" value="開始" onclick="start();"></input>&emsp;
 					<input type="button" class="video_parameter" class="button" id="button_replay" value="再開" onclick="replay();"></input>&emsp;
 					<input type="button" class="video_parameter" class="video_parameter" class="button" id="button_stop" value="停止" onclick="stop();"></input>&emsp;
@@ -85,7 +96,7 @@
 					<label id="file_choice" for="filename">
 						動画選択
 					</label>
-					<input type="file" id="filename" accept="video/*" style="display:none;" onchange="outer_uri2();"”></input>&emsp;
+					<input type="file" id="filename" accept="video/*" style="display:none;" onchange="outer_uri2();"></input>&emsp;
 					<span>ファイル名：</span>
 					<label id="file_show">
 						<span id="file_span_id">aho!</span>
@@ -171,8 +182,8 @@
 				</div>
 			</footer>
 		</div>
-		<script type="text/javascript" src="./../js/stereoscope_video4iframe.js"></script>
 		<script type="text/javascript" src="./../js/yt_readymadeiframe_control2.js"></script>
+		<script type="text/javascript" src="./../js/stereoscope_video4iframe.js"></script>
 		<script type="text/javascript" src = "https://unpkg.com/aframe-physics-system@1.5.0/dist/aframe-physics-system.min.js" > </script> 
 	</body>
 </html>
