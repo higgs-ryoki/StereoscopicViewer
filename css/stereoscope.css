@@ -8,8 +8,8 @@
 */
 
 body {
-    text-size-adjust: 100%;
-    -webkit-text-size-adjust: 100%; /* Safari */
+    text-size-adjust: 100%;			/* compatibled with smartphones*/
+    -webkit-text-size-adjust: 100%;	/* for Safari */
 }
 #google_map:disabled{
     color: #ddd;
