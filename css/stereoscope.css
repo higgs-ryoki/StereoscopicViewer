@@ -4,9 +4,13 @@
 										css for Stereoscopic Viewer Ver. 2.01
 												2019. 5.21. coded by K. RYOKI
 												2025.11.13. improved         
+												2025.11.14. compatibled with smartphones
 */
 
-
+body {
+    text-size-adjust: 100%;
+    -webkit-text-size-adjust: 100%; /* Safari */
+}
 #google_map:disabled{
     color: #ddd;
     background: #AAA;
